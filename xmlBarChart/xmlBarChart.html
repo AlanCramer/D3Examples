@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    .bar {
+        fill: steelblue;
+    }
+
+    .bar:hover {
+        fill: brown;
+    }
+
+    .axis {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+        display: none;
+    }
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+    var createBarChart = function(instrData){
+
+        x.domain(instrData.map(function (d) {
+            return d.name;
+        }));
+        y.domain([0, 1]);
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+        svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", height + 2 * margin.bottom / 3)
+                .style("text-anchor", "middle")
+                .text("System 44 Scope and Sequence");
+
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Mastery");
+
+        svg.selectAll(".bar")
+                .data(instrData)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) {
+                    return x(d.name);
+                })
+                .attr("width", x.rangeBand())
+                .attr("y", function (d) {
+                    return y(d.percentMastered);
+                })
+                .attr("height", function (d) {
+                    return height - y(d.percentMastered);
+                });
+
+    };
+
+    var createReport = function(studentData, instrData) {
+
+        createBarChart(instrData);
+    };
+
+    var studentRptXmlToData = function(data) {
+
+        var studentData = [].map.call(data.querySelectorAll("student"), function (student) {
+            var ret = {
+                givenName: student.querySelector("name").querySelector("given\\.name").textContent,
+                familyName: student.querySelector("name").querySelector("family\\.name").textContent,
+                teacherNameList: [],
+                topicsMastered: +student.querySelector("topics_mastered").textContent,
+                totalTopics: +student.querySelector("total_topics").textContent,
+                percentMastered: +student.querySelector("percent_mastered").textContent
+            };
+
+            return ret;
+        });
+
+        var intructionAreas = ['consonants', 'sight_words', 'success', 'syllables', 'vowels', 'word_parts'];
+
+        //var instrData = [].map.call(data.querySelector("student").querySelectorAll("instructions"),
+
+        var instrs = data.querySelector("student").querySelector("instructions");
+        var instrData = [];
+
+        for(var i = 0; i < instrs.childNodes.length; i++) {
+            var instr = {};
+
+            var item = instrs.childNodes.item(i);
+            var nodeName = item.nodeName;
+
+            if (nodeName === '#text') // whitespace
+                continue;
+
+            // ensure that this is one of the expected areas
+            if (intructionAreas.indexOf(nodeName) === -1) {
+                // assert!
+                console.log('unknown nodeName: ', nodeName);
+            }
+
+            instr.name = nodeName;
+
+            // unraveling the schema here ... not loving this
+            instr['startDate'] = item.querySelector('start_date').querySelector('date').textContent;
+            instr['totalTime'] = +item.querySelector('total_time').textContent;
+            instr['topicsMastered'] = +item.querySelector('topic').querySelector('topics_mastered').textContent;
+            instr['totalTopics'] = +item.querySelector('topic').querySelector('total_topics').textContent;
+            instr['percentMastered'] = (+item.querySelector('percent_mastered').textContent) / 100;
+
+            instrData.push(instr);
+        }
+
+        return {
+            studentData: studentData,
+            instrData: instrData
+        };
+    };
+
+    var margin = {top: 20, right: 20, bottom: 60, left: 40},
+            width = 600 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .6);
+
+    var y = d3.scale.linear()
+            .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(10, "%");
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.xml("studentRpt.xml", function (error, data) {
+        if (error) throw error;
+
+        var allData = studentRptXmlToData(data);
+        var instrData = allData.instrData;
+        var studentData = allData.studentData;
+
+        createReport(studentData, instrData);
+
+    });
+
+</script>

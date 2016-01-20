@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src='jquery-1.12.0.min.js'></script>
+
+    <style>
+        div {
+            background-color: aqua;
+        }
+
+        .div2 {
+            background-color: aquamarine;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div >
+        This is div 1.
+    </div>
+
+    <div class='div2'>
+        This is div 2.
+    </div>
+
+<script>
+    $(document).ready(function() {
+
+        $('body').append('<div>Added new div via jquery.</div>');
+
+        $('.div2').load('external.html .extDiv');
+
+    });
+</script>
+
+</body>
+</html>
