@@ -2,6 +2,17 @@
 <meta charset="utf-8">
 <style>
 
+    table {
+        border-collapse: collapse;
+    }
+
+    td, th {
+        border: 1px solid #999;
+        padding: 3px;
+        text-align: left;
+    }
+
+
     .bar {
         fill: steelblue;
     }
@@ -30,12 +41,37 @@
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-    var createBarChart = function(instrData){
+    var createBarChart = function(parent, instrData){
+
+        var margin = {top: 20, right: 20, bottom: 60, left: 40},
+                width = 600 - margin.left - margin.right,
+                height = 300 - margin.top - margin.bottom;
+
+        var x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], .6);
+
+        var y = d3.scale.linear()
+                .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left")
+                .ticks(10);
+
+        var svg = parent.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         x.domain(instrData.map(function (d) {
             return d.name;
         }));
-        y.domain([0, 1]);
+        y.domain([0, 100]);
 
         svg.append("g")
                 .attr("class", "x axis")
@@ -56,7 +92,7 @@
                 .attr("y", 6)
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
-                .text("Mastery");
+                .text("Percent Mastered");
 
         svg.selectAll(".bar")
                 .data(instrData)
@@ -75,9 +111,51 @@
 
     };
 
+    var createTable = function(parent, instrData) {
+
+        var columns = [
+            { name: 'THE SYSTEM', index: 'name'},
+            { name: 'DATE STARTED', index: 'startDate'},
+            { name: 'TOTAL TIME (MIN.)', index: 'totalTime'},
+            { name: 'TOPICS MASTERED', index: 'topicsMastered'},
+            { name: 'PERCENT MASTERED', index: 'percentMastered'}
+        ];
+
+        var table = parent.append('table'),
+                thead = table.append('thead'),
+                tbody = table.append('tbody');
+
+        thead.append('tr')
+                .selectAll('th')
+                .data(columns)
+                .enter()
+                .append('th')
+                .text(function(col) { return col.name;});
+
+        var rows = tbody.selectAll('tr')
+                .data(instrData)
+            .enter()
+                .append('tr');
+
+        var cells = rows.selectAll('td')
+                .data(function(row) { return columns.map(function(col) {
+                    return {column: col.name, value: row[col.index]};
+                })})
+                .enter()
+                .append('td')
+                .html(function(d) {
+                    return d.value; });
+
+    };
+
     var createReport = function(studentData, instrData) {
 
-        createBarChart(instrData);
+        var body = d3.select('body');
+
+        createTable(body,  instrData);
+
+        createBarChart(body, instrData);
+
     };
 
     var studentRptXmlToData = function(data) {
@@ -124,7 +202,7 @@
             instr['totalTime'] = +item.querySelector('total_time').textContent;
             instr['topicsMastered'] = +item.querySelector('topic').querySelector('topics_mastered').textContent;
             instr['totalTopics'] = +item.querySelector('topic').querySelector('total_topics').textContent;
-            instr['percentMastered'] = (+item.querySelector('percent_mastered').textContent) / 100;
+            instr['percentMastered'] = (+item.querySelector('percent_mastered').textContent);
 
             instrData.push(instr);
         }
@@ -135,30 +213,7 @@
         };
     };
 
-    var margin = {top: 20, right: 20, bottom: 60, left: 40},
-            width = 600 - margin.left - margin.right,
-            height = 300 - margin.top - margin.bottom;
 
-    var x = d3.scale.ordinal()
-            .rangeRoundBands([0, width], .6);
-
-    var y = d3.scale.linear()
-            .range([height, 0]);
-
-    var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
-
-    var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left")
-            .ticks(10, "%");
-
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     d3.xml("studentRpt.xml", function (error, data) {
         if (error) throw error;
@@ -166,6 +221,7 @@
         var allData = studentRptXmlToData(data);
         var instrData = allData.instrData;
         var studentData = allData.studentData;
+
 
         createReport(studentData, instrData);
 
