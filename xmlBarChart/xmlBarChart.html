@@ -2,9 +2,30 @@
 <meta charset="utf-8">
 <style>
 
+    body {
+        margin-left: 50px;
+        margin-top: 50px;
+        width: 560px;
+    }
+
+    img {
+        margin-right: 10px;
+    }
+
+    .report-title {
+        font-size: x-large;
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .report-sub-title {
+        font-size: small;
+        font-weight: bold;
+    }
+
     table {
         border-collapse: collapse;
-        margin-left: 100px;
         margin-bottom: 40px;
         margin-top: 100px;
     }
@@ -26,10 +47,9 @@
     }
 
     .barchart {
-        margin-left: 100px;
     }
 
-    .chartTitle{
+    .chartTitle {
         font-size: small;
     }
 
@@ -54,10 +74,13 @@
 
 </style>
 <body>
+
+<img src="Upward-Trend.png" width="100" height="100" style="float:left">
+
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-    var createBarChart = function(parent, instrData){
+    var createBarChart = function (parent, instrData) {
 
         var margin = {top: 20, right: 20, bottom: 60, left: 40},
                 width = 600 - margin.left - margin.right,
@@ -127,7 +150,7 @@
                 .attr("height", function (d) {
                     return height - y(d.percentMastered);
                 })
-                .on('mouseover', function(d, i) {
+                .on('mouseover', function (d, i) {
                     d3.select(this)
                             .style('fill', 'green');
 
@@ -135,7 +158,7 @@
 
                     d3.select(rows[0][i + headerRowCt]).style('background-color', '#dddddd');
                 })
-                .on('mouseout', function(d, i) {
+                .on('mouseout', function (d, i) {
                     d3.select(this)
                             .style('fill', 'darkblue');
 
@@ -146,14 +169,14 @@
 
     };
 
-    var createTable = function(parent, instrData) {
+    var createTable = function (parent, instrData) {
 
         var columns = [
-            { name: 'THE SYSTEM', index: 'name'},
-            { name: 'DATE STARTED', index: 'startDate'},
-            { name: 'TOTAL TIME (MIN.)', index: 'totalTime'},
-            { name: 'TOPICS MASTERED', index: 'topicsMastered'},
-            { name: 'PERCENT MASTERED', index: 'percentMastered'}
+            {name: 'THE SYSTEM', index: 'name'},
+            {name: 'DATE STARTED', index: 'startDate'},
+            {name: 'TOTAL TIME (MIN.)', index: 'totalTime'},
+            {name: 'TOPICS MASTERED', index: 'topicsMastered'},
+            {name: 'PERCENT MASTERED', index: 'percentMastered'}
         ];
 
         var table = parent.append('table'),
@@ -165,13 +188,15 @@
                 .data(columns)
                 .enter()
                 .append('th')
-                .text(function(col) { return col.name;});
+                .text(function (col) {
+                    return col.name;
+                });
 
         var rows = tbody.selectAll('tr')
                 .data(instrData)
-            .enter()
+                .enter()
                 .append('tr')
-                .on('mouseover', function(d, i) {
+                .on('mouseover', function (d, i) {
                     d3.select(this)
                             .style('background-color', '#dddddd');
 
@@ -179,7 +204,7 @@
 
                     d3.select(bars[0][i]).style('fill', 'green');
                 })
-                .on('mouseout', function(d, i) {
+                .on('mouseout', function (d, i) {
                     d3.select(this)
                             .style('background-color', '#ffffff');
 
@@ -191,52 +216,68 @@
 
 
         var cells = rows.selectAll('td')
-                .data(function(row) { return columns.map(function(col) {
-                    return {column: col.name, value: row[col.index]};
-                })})
+                .data(function (row) {
+                    return columns.map(function (col) {
+                        return {column: col.name, value: row[col.index]};
+                    })
+                })
                 .enter()
                 .append('td')
-                .html(function(d) {
-                    return d.value; });
+                .html(function (d) {
+                    return d.value;
+                });
 
     };
 
-    var createReport = function(studentData, instrData) {
+    var createHeader = function (parent, studentData) {
+
+        var container = parent.append('div');
+
+        container.append('label')
+                .attr('class', 'report-title')
+                .text('Student Mastery Report');
+
+        container.append('label')
+                .attr('class', 'report-sub-title')
+                .text('STUDENT: ' + studentData.givenName + ', ' + studentData.familyName);
+
+        container.append('hr');
+    };
+
+    var createReport = function (studentData, instrData) {
 
         var body = d3.select('body');
 
-//        createHeader(body, studentData);
+        createHeader(body, studentData);
 //        createInfoSection(body, studentData);
 
 
-        createTable(body,  instrData);
+        createTable(body, instrData);
 
         createBarChart(body, instrData);
 
     };
 
-    var studentRptXmlToData = function(data) {
+    var studentRptXmlToData = function (data) {
 
-        var studentData = [].map.call(data.querySelectorAll("student"), function (student) {
-            var ret = {
-                givenName: student.querySelector("name").querySelector("given\\.name").textContent,
-                familyName: student.querySelector("name").querySelector("family\\.name").textContent,
-                teacherNameList: [],
-                topicsMastered: +student.querySelector("topics_mastered").textContent,
-                totalTopics: +student.querySelector("total_topics").textContent,
-                percentMastered: +student.querySelector("percent_mastered").textContent
-            };
+        var student = data.querySelector("student");
+        var studentData = {
+            givenName: student.querySelector("name").querySelector("given\\.name").textContent,
+            familyName: student.querySelector("name").querySelector("family\\.name").textContent,
+            teacherNameList: [],
+            topicsMastered: +student.querySelector("topics_mastered").textContent,
+            totalTopics: +student.querySelector("total_topics").textContent,
+            percentMastered: +student.querySelector("percent_mastered").textContent
+        };
 
-            return ret;
-        });
 
-        var instructionAreas = ['consonants',  'vowels',  'sight_words', 'word_parts', 'syllables', 'success'];
-        var instructionAreasNames = ['Consonants',  'Vowels', 'Sight Words', 'Word Parts', 'Syllables', 'Success'];
+        var instructionAreas = ['consonants', 'vowels', 'sight_words', 'word_parts', 'syllables', 'success'];
+        var instructionAreasNames = ['Consonants', 'Vowels', 'Sight Words', 'Word Parts', 'Syllables', 'Success'];
         var insAreaMap = {};
 
         // build the map
-        instructionAreas.forEach(function(area, i) {
-           insAreaMap[area] = instructionAreasNames[i];
+        instructionAreas.forEach(function (area, i) {
+            insAreaMap[area] = instructionAreasNames[i];
         });
 
         //var instrData = [].map.call(data.querySelector("student").querySelectorAll("instructions"),
@@ -244,7 +285,7 @@
         var instrs = data.querySelector("student").querySelector("instructions");
         var instrData = [];
 
-        for(var i = 0; i < instrs.childNodes.length; i++) {
+        for (var i = 0; i < instrs.childNodes.length; i++) {
             var instr = {};
 
             var item = instrs.childNodes.item(i);
@@ -278,8 +319,6 @@
             instrData: instrData
         };
     };
-
-
 
     d3.xml("studentRpt.xml", function (error, data) {
         if (error) throw error;
