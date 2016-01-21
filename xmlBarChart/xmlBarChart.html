@@ -8,8 +8,17 @@
         width: 560px;
     }
 
-    img {
-        margin-right: 10px;
+    #img-progress-montitor {
+        margin-right: 20px;
+        float:left;
+    }
+    #img-sys44-logo {
+        float:right;
+
+    }
+
+    div {
+        display: inline-block;
     }
 
     .report-title {
@@ -23,6 +32,14 @@
         font-size: small;
         font-weight: bold;
     }
+
+    .title-hr {
+
+        height: 3px;
+        background-color: #BFDAE3;
+        border: none;
+    }
+
 
     table {
         border-collapse: collapse;
@@ -75,7 +92,8 @@
 </style>
 <body>
 
-<img src="Upward-Trend.png" width="100" height="100" style="float:left">
+<img src='Progress_Monitor.png' id='img-progress-montitor' width="60" >
+<img src='S44NGLogo2DFINAL-2.png' id='img-sys44-logo' width="100" >
 
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
@@ -241,7 +259,30 @@
                 .attr('class', 'report-sub-title')
                 .text('STUDENT: ' + studentData.givenName + ', ' + studentData.familyName);
 
-        container.append('hr');
+        container.append('hr')
+                .attr('class', 'title-hr');
+
+        container.append('label')
+                .attr('class', 'report-sub-title')
+                .text('School: ' );
+
+        container.append('br');
+
+        container.append('label')
+                .attr('class', 'report-sub-title')
+                .text('Teacher: ');
+
+        container.append('br');
+
+        container.append('label')
+                .attr('class', 'report-sub-title')
+                .text('Grade: ');
+
+        container.append('br');
+
+        container.append('label')
+                .attr('class', 'report-sub-title')
+                .text('Class: ');
     };
 
     var createReport = function (studentData, instrData) {

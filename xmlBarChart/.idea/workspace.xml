@@ -20,18 +20,17 @@
     <favorites_list name="xmlBarChart" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.546888">
+    <splitter split-orientation="horizontal" split-proportion="0.85975105">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="xmlBarChart.html" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/xmlBarChart.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.215311">
-                  <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+                <state vertical-scroll-proportion="0.4784689">
+                  <caret line="20" column="30" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
                   <folding>
-                    <element signature="n#style#0;n#img#0;n#body#0;n#!!top" expanded="true" />
-                    <element signature="e#1314#4337#0" expanded="false" />
-                    <element signature="e#4391#6276#0" expanded="false" />
+                    <element signature="e#1621#4644#0" expanded="false" />
+                    <element signature="e#4698#6583#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -79,8 +78,8 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-15" />
-    <option name="y" value="113" />
+    <option name="x" value="-23" />
+    <option name="y" value="44" />
     <option name="width" value="1440" />
     <option name="height" value="797" />
   </component>
@@ -197,7 +196,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-15" y="113" width="1440" height="797" extended-state="0" />
+    <frame x="-23" y="44" width="1440" height="797" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15081044" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -231,9 +230,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="102" column="98" selection-start-line="102" selection-start-column="98" selection-end-line="102" selection-end-column="98" />
           <folding>
-            <element signature="n#style#0;n#img#0;n#body#0;n#!!top" expanded="true" />
-            <element signature="e#1314#4337#0" expanded="false" />
-            <element signature="e#4391#6276#0" expanded="false" />
+            <element signature="e#1621#4644#0" expanded="false" />
+            <element signature="e#4698#6583#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -251,9 +249,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
           <folding>
-            <element signature="n#style#0;n#img#0;n#body#0;n#!!top" expanded="true" />
-            <element signature="e#1314#4337#0" expanded="false" />
-            <element signature="e#4391#6276#0" expanded="false" />
+            <element signature="e#1621#4644#0" expanded="false" />
+            <element signature="e#4698#6583#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -271,9 +268,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="67" column="30" selection-start-line="67" selection-start-column="30" selection-end-line="67" selection-end-column="30" />
           <folding>
-            <element signature="n#style#0;n#img#0;n#body#0;n#!!top" expanded="true" />
-            <element signature="e#1314#4337#0" expanded="false" />
-            <element signature="e#4391#6276#0" expanded="false" />
+            <element signature="e#1621#4644#0" expanded="false" />
+            <element signature="e#4698#6583#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -296,12 +292,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/xmlBarChart.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.215311">
-          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.4784689">
+          <caret line="20" column="30" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
           <folding>
-            <element signature="n#style#0;n#img#0;n#body#0;n#!!top" expanded="true" />
-            <element signature="e#1314#4337#0" expanded="false" />
-            <element signature="e#4391#6276#0" expanded="false" />
+            <element signature="e#1621#4644#0" expanded="false" />
+            <element signature="e#4698#6583#0" expanded="false" />
           </folding>
         </state>
       </provider>
