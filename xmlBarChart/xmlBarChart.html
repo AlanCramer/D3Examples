@@ -4,21 +4,37 @@
 
     table {
         border-collapse: collapse;
+        margin-left: 100px;
+        margin-bottom: 40px;
+        margin-top: 100px;
     }
 
     td, th {
         border: 1px solid #999;
         padding: 3px;
+        text-align: center;
+        font-size: small;
+    }
+
+    th {
+        font-weight: normal;
+        background-color: #BFDAE3;
+    }
+
+    td:nth-child(1) {
         text-align: left;
     }
 
-
-    .bar {
-        fill: steelblue;
+    .barchart {
+        margin-left: 100px;
     }
 
-    .bar:hover {
-        fill: brown;
+    .chartTitle{
+        font-size: small;
+    }
+
+    .bar {
+        fill: darkblue;
     }
 
     .axis {
@@ -63,6 +79,7 @@
                 .ticks(10);
 
         var svg = parent.append("svg")
+                .attr('class', 'barchart')
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
@@ -79,10 +96,11 @@
                 .call(xAxis);
 
         svg.append("text")
+                .attr("class", 'chartTitle')
                 .attr("x", width / 2)
                 .attr("y", height + 2 * margin.bottom / 3)
                 .style("text-anchor", "middle")
-                .text("System 44 Scope and Sequence");
+                .text("System 44 Scope and Sequence".toUpperCase());
 
         svg.append("g")
                 .attr("class", "y axis")
@@ -94,6 +112,7 @@
                 .style("text-anchor", "end")
                 .text("Percent Mastered");
 
+        var headerRowCt = 1;  // for cross highlighting
         svg.selectAll(".bar")
                 .data(instrData)
                 .enter().append("rect")
@@ -107,6 +126,22 @@
                 })
                 .attr("height", function (d) {
                     return height - y(d.percentMastered);
+                })
+                .on('mouseover', function(d, i) {
+                    d3.select(this)
+                            .style('fill', 'green');
+
+                    var rows = d3.select('table').selectAll('tr');
+
+                    d3.select(rows[0][i + headerRowCt]).style('background-color', '#dddddd');
+                })
+                .on('mouseout', function(d, i) {
+                    d3.select(this)
+                            .style('fill', 'darkblue');
+
+                    var rows = d3.select('table').selectAll('tr');
+                    d3.select(rows[0][i + headerRowCt]).style('background-color', '#ffffff');
+
                 });
 
     };
@@ -135,7 +170,25 @@
         var rows = tbody.selectAll('tr')
                 .data(instrData)
             .enter()
-                .append('tr');
+                .append('tr')
+                .on('mouseover', function(d, i) {
+                    d3.select(this)
+                            .style('background-color', '#dddddd');
+
+                    var bars = d3.select('.barchart').selectAll('.bar');
+
+                    d3.select(bars[0][i]).style('fill', 'green');
+                })
+                .on('mouseout', function(d, i) {
+                    d3.select(this)
+                            .style('background-color', '#ffffff');
+
+                    var bars = d3.select('.barchart').selectAll('.bar');
+
+                    d3.select(bars[0][i]).style('fill', 'darkblue');
+
+                });
+
 
         var cells = rows.selectAll('td')
                 .data(function(row) { return columns.map(function(col) {
@@ -151,6 +204,10 @@
     var createReport = function(studentData, instrData) {
 
         var body = d3.select('body');
+
+//        createHeader(body, studentData);
+//        createInfoSection(body, studentData);
+
 
         createTable(body,  instrData);
 
@@ -173,7 +230,14 @@
             return ret;
         });
 
-        var intructionAreas = ['consonants', 'sight_words', 'success', 'syllables', 'vowels', 'word_parts'];
+        var instructionAreas = ['consonants',  'vowels',  'sight_words', 'word_parts', 'syllables', 'success'];
+        var instructionAreasNames = ['Consonants',  'Vowels', 'Sight Words', 'Word Parts', 'Syllables', 'Success'];
+        var insAreaMap = {};
+
+        // build the map
+        instructionAreas.forEach(function(area, i) {
+           insAreaMap[area] = instructionAreasNames[i];
+        });
 
         //var instrData = [].map.call(data.querySelector("student").querySelectorAll("instructions"),
 
@@ -190,12 +254,14 @@
                 continue;
 
             // ensure that this is one of the expected areas
-            if (intructionAreas.indexOf(nodeName) === -1) {
+            var idx = instructionAreas.indexOf(nodeName);
+            if (idx === -1) {
                 // assert!
                 console.log('unknown nodeName: ', nodeName);
+                continue;
             }
 
-            instr.name = nodeName;
+            instr.name = insAreaMap[nodeName];
 
             // unraveling the schema here ... not loving this
             instr['startDate'] = item.querySelector('start_date').querySelector('date').textContent;
@@ -204,7 +270,7 @@
             instr['totalTopics'] = +item.querySelector('topic').querySelector('total_topics').textContent;
             instr['percentMastered'] = (+item.querySelector('percent_mastered').textContent);
 
-            instrData.push(instr);
+            instrData[idx] = instr;
         }
 
         return {
