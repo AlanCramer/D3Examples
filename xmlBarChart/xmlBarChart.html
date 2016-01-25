@@ -5,7 +5,7 @@
     body {
         margin-left: 50px;
         margin-top: 50px;
-        width: 560px;
+        width: 700px;
     }
 
     #img-progress-montitor {
@@ -29,8 +29,10 @@
     }
 
     .report-sub-title {
-        font-size: small;
-        font-weight: bold;
+    }
+
+    .header-label {
+
     }
 
     .title-hr {
@@ -40,18 +42,22 @@
         border: none;
     }
 
+    .info-section {
+
+        margin-top: 10px;
+
+    }
 
     table {
         border-collapse: collapse;
         margin-bottom: 40px;
-        margin-top: 100px;
+        margin-top: 10px;
     }
 
     td, th {
         border: 1px solid #999;
         padding: 3px;
         text-align: center;
-        font-size: small;
     }
 
     th {
@@ -101,7 +107,7 @@
     var createBarChart = function (parent, instrData) {
 
         var margin = {top: 20, right: 20, bottom: 60, left: 40},
-                width = 600 - margin.left - margin.right,
+                width = 700 - margin.left - margin.right,
                 height = 300 - margin.top - margin.bottom;
 
         var x = d3.scale.ordinal()
@@ -247,7 +253,7 @@
 
     };
 
-    var createHeader = function (parent, studentData) {
+    var createHeader = function (parent, reportData, studentData) {
 
         var container = parent.append('div');
 
@@ -257,41 +263,61 @@
 
         container.append('label')
                 .attr('class', 'report-sub-title')
-                .text('STUDENT: ' + studentData.givenName + ', ' + studentData.familyName);
+                .html('<b>STUDENT:</b> ' + studentData.familyName + ', ' + studentData.givenName);
 
         container.append('hr')
                 .attr('class', 'title-hr');
 
         container.append('label')
-                .attr('class', 'report-sub-title')
-                .text('School: ' );
+                .attr('class', 'header-label')
+                .html('<b>School:</b> ' + studentData.schoolName);
+
+        container.append('br');
+
+        var teacherNameStr = "";
+        studentData.teacherNames.forEach(function(t,i) {
+            teacherNameStr += t;
+            if (i < studentData.teacherNames.length-1) {
+                teacherNameStr += ", ";
+            }
+        });
+
+        container.append('label')
+                .attr('class', 'header-label')
+                .html('<b>Teacher:</b> ' + teacherNameStr);
 
         container.append('br');
 
         container.append('label')
-                .attr('class', 'report-sub-title')
-                .text('Teacher: ');
+                .attr('class', 'header-label')
+                .html('<b>Grade: </b>' + studentData.grade);
 
         container.append('br');
 
         container.append('label')
-                .attr('class', 'report-sub-title')
-                .text('Grade: ');
+                .attr('class', 'header-label')
+                .html('<b>Class: </b>' + studentData.className);
 
-        container.append('br');
-
-        container.append('label')
-                .attr('class', 'report-sub-title')
-                .text('Class: ');
     };
 
-    var createReport = function (studentData, instrData) {
+    var createInfoSection = function(parent, studentData, reportData) {
+
+        var container = parent.append('div')
+                .attr('class', 'info-section');
+
+        container.append('label')
+                .attr('class', 'info-section-label')
+                .html('<b>Time Period</b>: '+ reportData.periodStart + " - "
+                        + reportData.periodEnd);
+    };
+
+    var createReport = function (reportData, studentData, instrData) {
 
         var body = d3.select('body');
 
-        createHeader(body, studentData);
-//        createInfoSection(body, studentData);
+        createHeader(body, reportData, studentData);
 
+        createInfoSection(body, studentData, reportData);
 
         createTable(body, instrData);
 
@@ -299,18 +325,39 @@
 
     };
 
-    var studentRptXmlToData = function (data) {
+
+    var getStudentData = function(data) {
 
         var student = data.querySelector("student");
-        var studentData = {
+
+        var teachers = student.querySelector("teacher\\.name");
+        var teacherNameList = [];
+        for (var i = 0; i < teachers.childNodes.length; ++i){
+            var teach = teachers.childNodes.item(i);
+
+            if (teach.nodeName === '#text') // whitespace
+                continue;
+
+            teacherNameList.push(teach.textContent);
+        }
+
+        return {
             givenName: student.querySelector("name").querySelector("given\\.name").textContent,
             familyName: student.querySelector("name").querySelector("family\\.name").textContent,
-            teacherNameList: [],
+            schoolName: student.querySelector("school\\.name").textContent,
+            grade: +student.querySelector("grade\\.name").querySelector("grade").textContent,
+            className: student.querySelector("class\\.name").textContent,
+            startDate: student.querySelector("start_date").querySelector("date").textContent,
+            completionRate: +student.querySelector("completion_rate")
+                    .querySelector("per_topic").querySelector("minutes").textContent,
+            teacherNames: teacherNameList,
             topicsMastered: +student.querySelector("topics_mastered").textContent,
             totalTopics: +student.querySelector("total_topics").textContent,
             percentMastered: +student.querySelector("percent_mastered").textContent
         };
+    };
 
+    var getInstructionData = function(data) {
 
         var instructionAreas = ['consonants', 'vowels', 'sight_words', 'word_parts', 'syllables', 'success'];
         var instructionAreasNames = ['Consonants', 'Vowels', 'Sight Words', 'Word Parts', 'Syllables', 'Success'];
@@ -355,9 +402,57 @@
             instrData[idx] = instr;
         }
 
+        return instrData;
+    };
+
+    var getReportData = function(xml) {
+
+        var followup = xml.querySelector("followup").textContent;
+        var title = xml.querySelector("report_title").textContent;
+        var purpose = xml.querySelector('purpose').textContent;
+
+        var periodStart = xml.querySelector("period")
+                .querySelector("start")
+                .querySelector("date").textContent;
+
+        var periodEnd = xml.querySelector("period")
+                .querySelector("end")
+                .querySelector("date").textContent;
+
+        var generated = xml.querySelector('generated');
+        var genDate = generated.querySelector('date').textContent;
+        var genTime = generated.querySelector('time').textContent;
+        var genUserGivenName = generated.querySelector('given\\.name').textContent;
+        var genUserFamilyName = generated.querySelector('family\\.name').textContent;
+
+        return {
+            title: title,
+            followup: followup,
+            purpose: purpose,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+            genDate: genDate,
+            getTime: genTime,
+            genUserGivenName: genUserGivenName,
+            genUserFamilyName: genUserFamilyName
+        };
+    };
+
+    // builds an object that wraps 3 objects:
+    // reportData is the meta data for the report: title, purpose etc.
+    // studentData is info about the student: name, teachers, school
+    // instrData is info on the student results
+    //
+    var studentRptXmlToData = function (xml) {
+
+        var studentData = getStudentData(xml);
+        var instrData = getInstructionData(xml);
+        var reportData = getReportData(xml);
+
         return {
             studentData: studentData,
-            instrData: instrData
+            instrData: instrData,
+            reportData: reportData
         };
     };
 
@@ -367,9 +462,9 @@
         var allData = studentRptXmlToData(data);
         var instrData = allData.instrData;
         var studentData = allData.studentData;
+        var reportData = allData.reportData;
 
-
-        createReport(studentData, instrData);
+        createReport(reportData, studentData, instrData);
 
     });
 
