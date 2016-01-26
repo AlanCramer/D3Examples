@@ -60,7 +60,7 @@
                         </completion_rate>
                         <total_scope_sequence>
                             <start_date>
-                                <date/>
+                                <date>2014-09-15</date>
                             </start_date>
                             <total_time>
                                 <minutes>1338</minutes>
@@ -69,7 +69,7 @@
                                 <topics_mastered>152</topics_mastered>
                                 <total_topics>160</total_topics>
                             </topic>
-                            <percent_mastered>0</percent_mastered>
+                            <percent_mastered>95</percent_mastered>
                         </total_scope_sequence>
                     </summary>
                     <instructions>

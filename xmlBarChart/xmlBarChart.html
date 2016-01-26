@@ -226,7 +226,7 @@
 
     };
 
-    var createTable = function (parent, instrData) {
+    var createTable = function (parent, instrData, studentData) {
 
         var columns = [
             {name: 'THE SYSTEM', index: 'name'},
@@ -283,6 +283,25 @@
                 .html(function (d) {
                     return d.value;
                 });
+
+        var summaryRowData = [];
+        summaryRowData.push('Total Scope & Sequence');
+        summaryRowData.push(studentData.totalScopeSeqDate);
+        summaryRowData.push(studentData.totalScopeSeqTime);
+        summaryRowData.push(studentData.totalScopeSeqTopicsMstrd);
+        summaryRowData.push(studentData.totalScopeSeqPctMstrd);
+
+
+        var summaryRow = tbody.append('tr')
+                .style('background-color', '#BFDAE3')
+                .style('font-weight', 'bold')
+                ;
+
+        summaryRow.selectAll('td')
+                .data(summaryRowData)
+                .enter()
+                .append('td')
+                .html(function(d){return d;});
 
     };
 
@@ -421,7 +440,7 @@
 
         createInfoSection(body, studentData, reportData);
 
-        createTable(body, instrData);
+        createTable(body, instrData, studentData);
 
         createBarChart(body, instrData);
 
@@ -445,6 +464,7 @@
             teacherNameList.push(teach.textContent);
         }
 
+
         return {
             givenName: student.querySelector("name").querySelector("given\\.name").textContent,
             familyName: student.querySelector("name").querySelector("family\\.name").textContent,
@@ -457,7 +477,19 @@
             teacherNames: teacherNameList,
             topicsMastered: +student.querySelector("topics_mastered").textContent,
             totalTopics: +student.querySelector("total_topics").textContent,
-            percentMastered: +student.querySelector("percent_mastered").textContent
+            percentMastered: +student.querySelector("percent_mastered").textContent,
+            totalScopeSeqDate: student.querySelector("total_scope_sequence")
+                    .querySelector("start_date").querySelector("date").textContent,
+            totalScopeSeqTime: student.querySelector("total_scope_sequence")
+                    .querySelector("total_time").querySelector("minutes").textContent,
+            totalScopeSeqTopicsMstrd: student.querySelector("total_scope_sequence")
+                    .querySelector("topic")
+                    .querySelector("topics_mastered").textContent,
+            totalScopeSeqTtlTopics: student.querySelector("total_scope_sequence")
+                    .querySelector("topic")
+                    .querySelector("total_topics").textContent,
+            totalScopeSeqPctMstrd: student.querySelector("total_scope_sequence")
+                    .querySelector("percent_mastered").textContent
         };
     };
 
