@@ -5,7 +5,7 @@
     body {
         margin-left: 50px;
         margin-top: 50px;
-        width: 750px;
+        width: 700px;
     }
 
     #img-progress-montitor {
@@ -35,7 +35,7 @@
 
     }
 
-    .title-hr {
+    hr {
 
         height: 3px;
         background-color: #BFDAE3;
@@ -46,6 +46,37 @@
 
         margin-top: 10px;
 
+    }
+/*
+    @media screen {
+        div.divFooter {
+            display: none;
+        }
+    }*/
+    @media print {
+        div.divFooter {
+            position: fixed;
+            bottom: 0;
+        }
+    }
+
+    .alignleft {
+        font-size: smaller;
+        float: left;
+        text-align:left;
+        width:33.3%;
+    }
+    .aligncenter {
+        font-size: smaller;
+        float: left;
+        text-align:center;
+        width:33.3%;
+    }
+    .alignright {
+        font-size: smaller;
+        float: left;
+        text-align:right;
+        width:33.3%;
     }
 
     table {
@@ -330,6 +361,57 @@
 
     };
 
+    var createFooter = function(parent, reportData) {
+
+        var footer = parent.append('div')
+                .attr('class', 'divFooter')
+                .style('width', '100%');
+
+        footer.append('div')
+                .style('border', '1px solid black')
+                .style('width', '60%')
+                .style('padding', '5px')
+                .append('label')
+                .style('display', 'block')
+                .html('<b>Using This Report</b>')
+                .append('label')
+                .style('display', 'block')
+                .style('margin-top', '5px')
+                .html('<b>Purpose</b>: ' + reportData.purpose)
+                .append('label')
+                .style('display', 'block')
+                .style('margin-top', '5px')
+                .html('<b>Follow-Up</b>: ' + reportData.followup);
+
+        footer.append('hr');
+
+        footer.append('label')
+                .text('Printed by: ' + reportData.genUserGivenName + ' ' + reportData.genUserFamilyName)
+                .attr('class', 'alignleft')
+        ;
+
+        footer.append('label')
+                .attr('class', 'aligncenter')
+                .text('Page 1 of 1');
+
+        footer.append('label')
+                .text('Generated on ' + reportData.genDate)
+                .attr('class', 'alignright');
+
+        footer.append('label')
+                .text('Copyright' + ' ' + 'Houghtin Mifflin Corporation.')
+                .attr('class', 'alignleft');
+
+        footer.append('label')// css trickery, need something better
+                .attr('class', 'aligncenter')
+                .text('-');
+
+        footer.append('label')
+                .text('v 1.4')
+                .attr('class', 'alignright');
+
+    };
+
     var createReport = function (reportData, studentData, instrData) {
 
         var body = d3.select('body');
@@ -341,6 +423,8 @@
         createTable(body, instrData);
 
         createBarChart(body, instrData);
+
+        createFooter(body, reportData);
 
     };
 
