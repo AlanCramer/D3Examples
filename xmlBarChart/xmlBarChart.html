@@ -5,7 +5,7 @@
     body {
         margin-left: 50px;
         margin-top: 50px;
-        width: 700px;
+        width: 800px;
     }
 
     #img-progress-montitor {
@@ -51,12 +51,13 @@
     table {
         border-collapse: collapse;
         margin-bottom: 40px;
-        margin-top: 10px;
+        margin-top: 20px;
+        width: 800px;
     }
 
     td, th {
         border: 1px solid #999;
-        padding: 3px;
+        padding: 4px;
         text-align: center;
     }
 
@@ -107,7 +108,7 @@
     var createBarChart = function (parent, instrData) {
 
         var margin = {top: 20, right: 20, bottom: 60, left: 40},
-                width = 700 - margin.left - margin.right,
+                width = 800 - margin.left - margin.right,
                 height = 300 - margin.top - margin.bottom;
 
         var x = d3.scale.ordinal()
@@ -303,12 +304,30 @@
     var createInfoSection = function(parent, studentData, reportData) {
 
         var container = parent.append('div')
-                .attr('class', 'info-section');
+                .attr('class', 'info-section')
+                .style('display', 'block')
+                .style('width', '400px');
 
         container.append('label')
                 .attr('class', 'info-section-label')
                 .html('<b>Time Period</b>: '+ reportData.periodStart + " - "
                         + reportData.periodEnd);
+
+        var infoBox = container.append('div')
+                .attr('class', 'info-section')
+                .style('display', 'block')
+                .style('border', '1px solid darkblue')
+                .style('padding', '2px');
+
+        infoBox.append('label')
+                .html('<b>Date Started System 44</b>: ' + studentData.startDate);
+
+        infoBox.append('br');
+
+        infoBox.append('label')
+                .html('<b>Rate of Completion</b>: ' + studentData.completionRate + ' Minutes / Topic');
+
+
     };
 
     var createReport = function (reportData, studentData, instrData) {
