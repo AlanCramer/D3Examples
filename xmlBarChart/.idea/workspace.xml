@@ -20,17 +20,29 @@
     <favorites_list name="xmlBarChart" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.72448134">
+    <splitter split-orientation="horizontal" split-proportion="0.8448133">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="xmlBarChart.html" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/xmlBarChart.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.875">
-                  <caret line="104" column="27" selection-start-line="104" selection-start-column="27" selection-end-line="104" selection-end-column="27" />
+                <state vertical-scroll-proportion="0.625">
+                  <caret line="219" column="67" selection-start-line="219" selection-start-column="67" selection-end-line="219" selection-end-column="67" />
                   <folding>
-                    <element signature="e#7950#9324#0" expanded="false" />
-                    <element signature="e#9397#10315#0" expanded="false" />
+                    <element signature="e#8170#9544#0" expanded="false" />
+                    <element signature="e#9617#10535#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="tones.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/tones.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="274" column="11" selection-start-line="274" selection-start-column="11" selection-end-line="274" selection-end-column="11" />
+                  <folding>
+                    <element signature="e#0#41#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -64,10 +76,18 @@
       </split-second>
     </splitter>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/studentRpt.xml" />
+        <option value="$PROJECT_DIR$/tones.js" />
         <option value="$PROJECT_DIR$/xmlBarChart.html" />
       </list>
     </option>
@@ -78,8 +98,8 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-19" />
-    <option name="y" value="23" />
+    <option name="x" value="12" />
+    <option name="y" value="62" />
     <option name="width" value="1440" />
     <option name="height" value="797" />
   </component>
@@ -133,7 +153,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../audio/tones" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="js-jscs-nodeInterpreter" value="/usr/local/bin/node" />
@@ -199,7 +219,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-19" y="23" width="1440" height="797" extended-state="0" />
+    <frame x="12" y="62" width="1440" height="797" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15081044" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -241,8 +261,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="37" column="26" selection-start-line="37" selection-start-column="26" selection-end-line="37" selection-end-column="26" />
           <folding>
-            <element signature="e#7950#9324#0" expanded="false" />
-            <element signature="e#9397#10315#0" expanded="false" />
+            <element signature="e#8170#9544#0" expanded="false" />
+            <element signature="e#9617#10535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -260,8 +280,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="102" column="98" selection-start-line="102" selection-start-column="98" selection-end-line="102" selection-end-column="98" />
           <folding>
-            <element signature="e#7950#9324#0" expanded="false" />
-            <element signature="e#9397#10315#0" expanded="false" />
+            <element signature="e#8170#9544#0" expanded="false" />
+            <element signature="e#9617#10535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -279,8 +299,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
           <folding>
-            <element signature="e#7950#9324#0" expanded="false" />
-            <element signature="e#9397#10315#0" expanded="false" />
+            <element signature="e#8170#9544#0" expanded="false" />
+            <element signature="e#9617#10535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -298,8 +318,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="67" column="30" selection-start-line="67" selection-start-column="30" selection-end-line="67" selection-end-column="30" />
           <folding>
-            <element signature="e#7950#9324#0" expanded="false" />
-            <element signature="e#9397#10315#0" expanded="false" />
+            <element signature="e#8170#9544#0" expanded="false" />
+            <element signature="e#9617#10535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -320,13 +340,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tones.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="274" column="11" selection-start-line="274" selection-start-column="11" selection-end-line="274" selection-end-column="11" />
+          <folding>
+            <element signature="e#0#41#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/xmlBarChart.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.875">
-          <caret line="104" column="27" selection-start-line="104" selection-start-column="27" selection-end-line="104" selection-end-column="27" />
+        <state vertical-scroll-proportion="0.625">
+          <caret line="219" column="67" selection-start-line="219" selection-start-column="67" selection-end-line="219" selection-end-column="67" />
           <folding>
-            <element signature="e#7950#9324#0" expanded="false" />
-            <element signature="e#9397#10315#0" expanded="false" />
+            <element signature="e#8170#9544#0" expanded="false" />
+            <element signature="e#9617#10535#0" expanded="false" />
           </folding>
         </state>
       </provider>

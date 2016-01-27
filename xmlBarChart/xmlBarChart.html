@@ -102,7 +102,7 @@
     }
 
     .barchart {
-        margin-top: 20px;  
+        margin-top: 20px;
     }
 
     .chartTitle {
@@ -130,7 +130,7 @@
 
 </style>
 <body>
-
+<script src='tones.js'></script>
 <img src='Progress_Monitor.png' id='img-progress-montitor' width="60" >
 <img src='S44NGLogo2DFINAL-2.png' id='img-sys44-logo' width="100" >
 
@@ -214,6 +214,10 @@
                     var rows = d3.select('table').selectAll('tr');
 
                     d3.select(rows[0][i + headerRowCt]).style('background-color', '#dddddd');
+                    tones.attack = 0;
+                    tones.release = 300;
+                    tones.type = "sine";
+                    tones.playFrequency(440 * d.percentMastered/100);
                 })
                 .on('mouseout', function (d, i) {
                     d3.select(this)
