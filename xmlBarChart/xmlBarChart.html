@@ -131,6 +131,7 @@
 </style>
 <body>
 <script src='tones.js'></script>
+<script src='jquery-1.12.0.min.js'></script>
 <img src='Progress_Monitor.png' id='img-progress-montitor' width="60" >
 <img src='S44NGLogo2DFINAL-2.png' id='img-sys44-logo' width="100" >
 
@@ -439,6 +440,18 @@
     var createReport = function (reportData, studentData, instrData) {
 
         var body = d3.select('body');
+
+//        body.append('button')
+//                .text('Hello')
+//                .on('click', function(){
+//                    d3.select(this)
+//                            .style('color','#ccffff');
+//
+//                    $.get('http://localhost:8080/ScholasticCentral/api/classes/m9rvjpffb8e8v97gpl2i6g3k_v8q9qq0/reports/xml:s44ng_02/lti',
+//                            function(data){
+//                                d3.select('body').append('label').html(data);
+//                            });
+//                });
 
         createHeader(body, reportData, studentData);
 

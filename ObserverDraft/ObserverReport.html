@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Observer Report</title>
+
+<script src='jquery-1.12.0.min.js'></script>
+<script src='d3.min.js'></script>
+
+</head>
+
+<style>
+
+    body {
+        margin-left: 50px;
+        margin-top: 40px;
+        width: 757px;
+        font-family: sans-serif;
+    }
+
+    #title-div {
+
+    }
+    #title-div h1 {
+        font-weight: 100;
+        /*border: 1px solid black;*/
+        margin:0px;
+    }
+    #title-div h4{
+        font-weight: 100;
+        margin:0px;
+    }
+
+    #toolbar-table {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    #toolbar-table
+    td {
+        padding-right: 80px;
+        font-size: 14px;
+    }
+
+    #summary-div {
+        background-color: #f0f7ff;
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid black;
+        border-radius: 5px;
+        height: 100px;
+    }
+
+    #summary-div
+    table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    #summary-div
+    td {
+        /*border: 1px solid black;*/
+        overflow: hidden;
+        padding: 5px;
+        text-align: center;
+        font-size: 12px;
+    }
+    #summary-div
+    td:nth-child(1) {
+        text-align: left;
+    }
+    #summary-div
+    svg {
+        width: 10px;
+        height: 10px;
+        display: inline;
+        margin-right: 10px;
+    }
+    #summary-div
+    circle {
+        r: 5px;
+        cx: 5px;
+        cy: 5px;
+        fill: green;
+    }
+    #summary-div
+    td h1 {
+        font-size: 24pt;
+        margin-bottom: 20px;
+    }
+    #summary-div
+    td h4 {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+
+</style>
+
+
+
+<body>
+
+<script>
+
+    var createTitle = function (container, studentData) {
+
+        var titleDiv = container
+                .append('div')
+                .attr('id', 'title-div');
+
+        titleDiv.append('h1')
+                .text('Observer Report');
+
+        titleDiv.append('h4')
+                .text(studentData.lastname + ', ' + studentData.firstname);
+    };
+
+    var createToolBar = function (container) {
+
+        var table = container.append('table')
+                .attr('id', 'toolbar-table');
+
+        var tr = table.append('tr');
+
+        var elems = ['Export', 'Set Reminder', 'Print', 'Learn More'];
+
+        tr.selectAll('td')
+                .data(elems)
+                .enter()
+                .append('td')
+                .html (function(d) { return d;} );
+    };
+
+    var createSummaryBox = function (container, reportData) {
+
+        var div = container.append('div')
+                .attr('id', 'summary-div');
+
+        var table = div.append('table');
+
+        var tr = table.append('tr');
+
+        tr.append('td')
+                .html('<h3>Summary</h3><p>' + reportData.summary +'</p>')
+                .style('width', '40%');
+
+        tr.append('td').html('<h4><svg><circle></circle></svg>On Track</h4>Most Frequent Rating');
+        tr.append('td').html('<h1>12</h1>Total Goals Rated');
+        tr.append('td').html('<h1>2</h1>Total Notes & Reminders');
+    };
+
+    var createStrandGraphic = function (container, obsData) {
+
+
+    };
+
+    d3.json("studentObserverData.json", function (error, json) {
+        //if (error) throw error;
+
+        var studentData = json.studentData;
+        var reportData = json.reportData;
+        var obsDataByStrand = json.observerDataByStrand;
+        console.log(studentData);
+
+        var body = d3.select('body');
+
+        createTitle(body, studentData);
+        createToolBar(body);
+        createSummaryBox(body, reportData);
+
+        createStrandGraphic(body, obsDataByStrand);
+    });
+
+
+</script>
+
+</body>
+
+
+</html>

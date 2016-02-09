@@ -1,0 +1,31 @@
+{
+  "studentData": {
+    "lastname" : "Fernandez",
+    "firstname": "Bubba"
+  },
+
+  "reportData" : {
+    "summary"  : "This report summarizes student formative assessment scores in the Observer tool."
+  },
+
+  "observerSummaryData" : {
+    "mostFreqRating"         : "On Track",
+    "totalGoalsRated"        : "12",
+    "totalNotesAndReminders" : "2"
+  },
+
+  "observerDataByStrand" : {
+    "reading" : {
+      "onTrack"     : "4",
+      "nearlyThere" : "0",
+      "notYet"      : "1"
+    },
+    "speakingAndListening" : {
+      "onTrack"     : "2",
+      "nearlyThere" : "3",
+      "notYet"      : "0"
+    },
+    "writing" : {
+    }
+  }
+}
