@@ -26,6 +26,20 @@
       "notYet"      : "0"
     },
     "writing" : {
+      "onTrack"     : "0",
+      "nearlyThere" : "0",
+      "notYet"      : "0"
     }
-  }
+  },
+
+  "obsTableData" :  [
+    {
+      "date" :"2/15/17",
+      "lesson" : "4.22",
+      "strand" : "Reading",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Not Yet",
+      "notesReminders" : "Use a resource ..."
+    }
+  ]
 }

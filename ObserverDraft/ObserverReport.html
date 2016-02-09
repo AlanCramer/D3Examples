@@ -89,8 +89,75 @@
     }
     #summary-div
     td h4 {
+        font-size: 14px;
         margin-top: 30px;
         margin-bottom: 30px;
+    }
+
+    #strand-div {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid black;
+        border-radius: 5px;
+        /*height: 300px;*/
+    }
+
+    #strand-div .title {
+        margin-top: 10px;
+    }
+
+    #strand-div .glyph {
+        padding: 15px;
+    }
+
+    #strand-div
+    .legend
+    svg {
+        width: 10px;
+        height: 10px;
+        display: inline;
+        padding-right: 5px;
+    }
+
+    #strand-div
+    .legend
+    svg
+    rect {
+        x: 0px;
+        y: 0px;
+        width: 10px;
+        height: 10px;
+    }
+
+    #strand-div
+    .legend-label {
+        padding-right: 40px;
+    }
+
+    .obs-data-table
+    table {
+        border-collapse: collapse;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .obs-data-table
+    td, th {
+        border: 1px solid #999;
+        padding: 4px;
+        text-align: center;
+    }
+
+    .obs-data-table
+    th {
+        font-weight: normal;
+        font-size: small;
+        background-color: #BFDAE3;
+    }
+
+    .obs-data-table
+    td:nth-child(1) {
+        text-align: left;
     }
 
 
@@ -149,10 +216,204 @@
         tr.append('td').html('<h1>2</h1>Total Notes & Reminders');
     };
 
+
+    // makes the annulus chart
+    // the string will show up in the middle of the circle, one line break per element
+    var createObsStrandChart = function (container, categoryStrArr, obsData) {
+
+        //Width and height
+        var w = 200;
+        var h = 200;
+
+        var dataObj = obsData;
+        var dataset = [  dataObj.notYet, dataObj.nearlyThere, dataObj.onTrack ];
+        var colors = [ '#f21f3c', '#f9c31d', '#90d953' ];
+
+        var outerRadius = w / 2;
+        var innerRadius = w / 3;
+        var arc = d3.svg.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(outerRadius);
+
+        var pie = d3.layout.pie();
+
+        //Create SVG element
+        var svg = container
+                .append("svg")
+                .attr('class', 'glyph')
+                .attr("width", w)
+                .attr("height", h);
+
+        var strandName = svg.append("text")
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'translate(' + w/2 + ', ' + 2*h/5 + ')');
+
+        categoryStrArr.forEach(function (catStr) {
+
+            strandName
+                    .append('tspan')
+                    .text(catStr)
+                    .attr('x', '0')
+                    .attr('dy', '1.2em');
+        });
+
+        // if no data, draw grey annulus and reutrn
+        if (0 === dataset.reduce(function(a, b, i, s) { return a + Math.abs(parseInt(b)); }, 0)) {
+
+            var arcs = svg.selectAll('g.arc')
+                    .data(pie([1]))
+                    .enter()
+                    .append('g')
+                    .attr('class', 'arc')
+                    .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
+
+            arcs.append('path')
+                    .attr('fill', '#aaaaaa')
+                    .attr('d', arc);
+
+            return;
+        }
+
+        //Set up groups
+        var arcs = svg.selectAll("g.arc")
+                .data(pie(dataset))
+                .enter()
+                .append("g")
+                .attr("class", "arc")
+                .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
+
+        //Draw arc paths
+        arcs.append("path")
+                .attr("fill", function(d, i) {
+                    return colors[i];
+                })
+                .attr("d", arc);
+
+        //Labels
+        arcs.append("text")
+                .attr("transform", function(d) {
+                    return "translate(" + arc.centroid(d) + ")";
+                })
+                .attr("text-anchor", "middle")
+                .attr('fill', 'white')
+                .text(function(d) {
+                    return d.value;
+                })
+                .attr("visibility", function(d) {
+                    if (d.value < 1) return "hidden";
+                });
+    };
+
+    var createLegend = function(container, fields) {
+
+
+        var tableRow = container.append('table')
+                .attr('class', 'legend')
+                .append('tr');
+
+        var tds = tableRow.selectAll('td')
+                .data(fields)
+                .enter()
+                .append('td');
+
+        tds.append('svg')
+                .append('rect')
+                .style('fill', function(d) {
+                    return d.color; });
+
+
+        tds.append('text')
+                .attr('class', 'legend-label')
+                .text(function(d) { return d.name;} );
+    };
+
     var createStrandGraphic = function (container, obsData) {
 
+        var div = container.append('div')
+                .attr('id', 'strand-div');
+
+        div.append('h3')
+                .html('Ratings by Strand')
+                .attr('class', 'title');
+
+        createObsStrandChart(div, ['Reading'], obsData.reading);
+        createObsStrandChart(div, ['Speaking and', 'Listening'], obsData.speakingAndListening);
+        createObsStrandChart(div, ['Writing'], obsData.writing);
+
+        // todo: move out for use in other functions
+        var legendFields = [
+            {   name: 'On Track',
+                color: '#90d953'
+            },
+            {   name: 'Nearly There',
+                color: '#f9c31d'
+            },
+            {   name: 'Not Yet',
+                color: '#f21f3c'
+            },
+            {
+                name: 'No Data',
+                color: '#aaaaaa'
+            }
+        ];
+
+        createLegend(div, legendFields);
+    };
+
+    var createTable = function (container, obsTableData) {
+
+        var columns = [
+            {name: 'Date', index: 'date'},
+            {name: 'Lesson', index: 'lesson'},
+            {name: 'Strand', index: 'strand'},
+            {name: 'Goal Text', index: 'goalText'},
+            {name: 'Goal Rating', index: 'goalRating'},
+            {name: 'Notes & Reminders', index: 'notesReminders'}
+        ];
+
+        var table = container.append('table'),
+                thead = table.append('thead'),
+                tbody = table.append('tbody');
+
+        table.attr('class', 'obs-data-table');
+
+        thead.append('tr')
+                .selectAll('th')
+                .data(columns)
+                .enter()
+                .append('th')
+                .text(function (col) {
+                    return col.name;
+                });
+
+        var rows = tbody.selectAll('tr')
+                .data(obsTableData)
+                .enter()
+                .append('tr')
+                .on('mouseover', function (d, i) {
+                    d3.select(this)
+                            .style('background-color', '#dddddd');
+                })
+                .on('mouseout', function (d, i) {
+                    d3.select(this)
+                            .style('background-color', '#ffffff');
+                });
+
+
+        var cells = rows.selectAll('td')
+                .data(function (row) {
+                    return columns.map(function (col) {
+                        return {column: col.name, value: row[col.index]};
+                    })
+                })
+                .enter()
+                .append('td')
+                .html(function (d) {
+                    return d.value;
+                });
 
     };
+
 
     d3.json("studentObserverData.json", function (error, json) {
         //if (error) throw error;
@@ -160,6 +421,8 @@
         var studentData = json.studentData;
         var reportData = json.reportData;
         var obsDataByStrand = json.observerDataByStrand;
+        var obsTableData = json.obsTableData;
+
         console.log(studentData);
 
         var body = d3.select('body');
@@ -169,6 +432,8 @@
         createSummaryBox(body, reportData);
 
         createStrandGraphic(body, obsDataByStrand);
+
+        createTable(body, obsTableData);
     });
 
 
