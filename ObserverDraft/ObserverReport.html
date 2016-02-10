@@ -134,18 +134,10 @@
         padding-right: 40px;
     }
 
-    .obs-data-table
-    table {
+    .obs-data-table {
         border-collapse: collapse;
         margin-top: 20px;
         width: 100%;
-    }
-
-    .obs-data-table
-    td, th {
-        border: 1px solid #999;
-        padding: 4px;
-        text-align: center;
     }
 
     .obs-data-table
@@ -156,8 +148,37 @@
     }
 
     .obs-data-table
-    td:nth-child(1) {
+    th {
+        color: white;
+        background-color: #3397e1;
+        height: 60px;
+        font-size: 13px;
         text-align: left;
+    }
+
+    .obs-data-table
+    th:nth-child(1) {
+        text-align: left;
+        background-color: #48647e;
+    }
+
+    .obs-data-table  /* goal text column */
+    td:nth-child(4) {
+        width: 20%;
+        text-align: left;
+    }
+    .obs-data-table  /* Notes and Reminders column */
+    td:nth-child(6) {
+        width: 30%;
+        text-align: left;
+    }
+
+    .obs-data-table
+    td, th {
+        border: 1px solid #999;
+        padding: 4px;
+        text-align: center;
+        font-size: 14px;
     }
 
 
@@ -168,6 +189,7 @@
 <body>
 
 <script>
+
 
     var createTitle = function (container, studentData) {
 
@@ -195,7 +217,9 @@
                 .data(elems)
                 .enter()
                 .append('td')
-                .html (function(d) { return d;} );
+                .html(function (d) {
+                    return d;
+                });
     };
 
     var createSummaryBox = function (container, reportData) {
@@ -208,7 +232,7 @@
         var tr = table.append('tr');
 
         tr.append('td')
-                .html('<h3>Summary</h3><p>' + reportData.summary +'</p>')
+                .html('<h3>Summary</h3><p>' + reportData.summary + '</p>')
                 .style('width', '40%');
 
         tr.append('td').html('<h4><svg><circle></circle></svg>On Track</h4>Most Frequent Rating');
@@ -226,8 +250,8 @@
         var h = 200;
 
         var dataObj = obsData;
-        var dataset = [  dataObj.notYet, dataObj.nearlyThere, dataObj.onTrack ];
-        var colors = [ '#f21f3c', '#f9c31d', '#90d953' ];
+        var dataset = [dataObj.notYet, dataObj.nearlyThere, dataObj.onTrack];
+        var colors = ['#f21f3c', '#f9c31d', '#90d953'];
 
         var outerRadius = w / 2;
         var innerRadius = w / 3;
@@ -246,7 +270,7 @@
 
         var strandName = svg.append("text")
                 .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + w/2 + ', ' + 2*h/5 + ')');
+                .attr('transform', 'translate(' + w / 2 + ', ' + 2 * h / 5 + ')');
 
         categoryStrArr.forEach(function (catStr) {
 
@@ -258,7 +282,9 @@
         });
 
         // if no data, draw grey annulus and reutrn
-        if (0 === dataset.reduce(function(a, b, i, s) { return a + Math.abs(parseInt(b)); }, 0)) {
+        if (0 === dataset.reduce(function (a, b, i, s) {
+                    return a + Math.abs(parseInt(b));
+                }, 0)) {
 
             var arcs = svg.selectAll('g.arc')
                     .data(pie([1]))
@@ -284,27 +310,27 @@
 
         //Draw arc paths
         arcs.append("path")
-                .attr("fill", function(d, i) {
+                .attr("fill", function (d, i) {
                     return colors[i];
                 })
                 .attr("d", arc);
 
         //Labels
         arcs.append("text")
-                .attr("transform", function(d) {
+                .attr("transform", function (d) {
                     return "translate(" + arc.centroid(d) + ")";
                 })
                 .attr("text-anchor", "middle")
                 .attr('fill', 'white')
-                .text(function(d) {
+                .text(function (d) {
                     return d.value;
                 })
-                .attr("visibility", function(d) {
+                .attr("visibility", function (d) {
                     if (d.value < 1) return "hidden";
                 });
     };
 
-    var createLegend = function(container, fields) {
+    var createLegend = function (container, fields) {
 
 
         var tableRow = container.append('table')
@@ -318,13 +344,16 @@
 
         tds.append('svg')
                 .append('rect')
-                .style('fill', function(d) {
-                    return d.color; });
+                .style('fill', function (d) {
+                    return d.color;
+                });
 
 
         tds.append('text')
                 .attr('class', 'legend-label')
-                .text(function(d) { return d.name;} );
+                .text(function (d) {
+                    return d.name;
+                });
     };
 
     var createStrandGraphic = function (container, obsData) {
@@ -342,13 +371,16 @@
 
         // todo: move out for use in other functions
         var legendFields = [
-            {   name: 'On Track',
+            {
+                name: 'On Track',
                 color: '#90d953'
             },
-            {   name: 'Nearly There',
+            {
+                name: 'Nearly There',
                 color: '#f9c31d'
             },
-            {   name: 'Not Yet',
+            {
+                name: 'Not Yet',
                 color: '#f21f3c'
             },
             {
@@ -399,7 +431,6 @@
                             .style('background-color', '#ffffff');
                 });
 
-
         var cells = rows.selectAll('td')
                 .data(function (row) {
                     return columns.map(function (col) {
@@ -416,24 +447,28 @@
 
 
     d3.json("studentObserverData.json", function (error, json) {
-        //if (error) throw error;
+        if (error) throw error;
 
-        var studentData = json.studentData;
-        var reportData = json.reportData;
-        var obsDataByStrand = json.observerDataByStrand;
-        var obsTableData = json.obsTableData;
+        d3.csv("GoalTable.csv", function (error, csv) {
+            if (error) throw error;
 
-        console.log(studentData);
+            var studentData = json.studentData;
+            var reportData = json.reportData;
+            var obsDataByStrand = json.observerDataByStrand;
+            var obsTableData = json.obsTableData;
 
-        var body = d3.select('body');
+            console.log(studentData);
 
-        createTitle(body, studentData);
-        createToolBar(body);
-        createSummaryBox(body, reportData);
+            var body = d3.select('body');
 
-        createStrandGraphic(body, obsDataByStrand);
+            createTitle(body, studentData);
+            createToolBar(body);
+            createSummaryBox(body, reportData);
 
-        createTable(body, obsTableData);
+            createStrandGraphic(body, obsDataByStrand);
+
+            createTable(body, obsTableData);
+        });
     });
 
 

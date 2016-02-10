@@ -39,7 +39,79 @@
       "strand" : "Reading",
       "goalText" : "Some lovely text",
       "goalRating" : "Not Yet",
-      "notesReminders" : "Use a resource ..."
+      "notesReminders" : "Use a resource for I don't know what reason. And furthermore ..."
+    },
+    {
+      "date" :"2/5/17",
+      "lesson" : "4.22",
+      "strand" : "SpeakingAndListening",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Nearly There",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"2/2/17",
+      "lesson" : "4.20",
+      "strand" : "Reading",
+      "goalText" : "Some lovely text",
+      "goalRating" : "On Track",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/30/17",
+      "lesson" : "4.15",
+      "strand" : "SpeakingAndListening",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Nearly There",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/30/17",
+      "lesson" : "4.20",
+      "strand" : "Reading",
+      "goalText" : "Some lovely text",
+      "goalRating" : "On Track",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/25/17",
+      "lesson" : "4.14",
+      "strand" : "SpeakingAndListening",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Not There",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/25/17",
+      "lesson" : "4.14",
+      "strand" : "SpeakingAndListening",
+      "goalText" : "Some lovely text",
+      "goalRating" : "On Track",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/23/17",
+      "lesson" : "4.3",
+      "strand" : "Writing",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Not Yet",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/23/17",
+      "lesson" : "4.3",
+      "strand" : "Reading",
+      "goalText" : "Some lovely text",
+      "goalRating" : "On Track",
+      "notesReminders" : ""
+    },
+    {
+      "date" :"1/20/17",
+      "lesson" : "4.1",
+      "strand" : "SpeakingAndListening",
+      "goalText" : "Some lovely text",
+      "goalRating" : "Nearly There",
+      "notesReminders" : ""
     }
   ]
 }
