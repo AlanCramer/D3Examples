@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src='d3/d3.js'></script>
+
+    <style>
+        #theBoard {
+            display: block;
+            border: 1px solid black;
+            margin-top:100px;
+            margin-left : 200px;
+            /* margin-left: auto;    to center it
+            margin-right: auto;*/
+        }
+
+        .board-sq {
+            fill: lightblue;
+        }
+        .board-sq:hover {
+            fill: brown;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<script>
+
+    //d3.select('body').append('h1').text('Hello World!');
+    var xBoardSize = 20;
+    var yBoardSize = 20;
+    var boardWidth = 500;
+    var boardHeight = 500;
+    var sqHeight = boardHeight / yBoardSize; // square as in place on the board
+    var sqWidth = boardWidth / xBoardSize;
+
+    var seedCt = 5;
+
+    var svg = d3.select('body').append('svg')
+            .attr('width', boardWidth)
+            .attr('height', boardHeight)
+            .attr('id', 'theBoard');
+
+    var xPositions = d3.range(xBoardSize);
+    var yPositions = d3.range(yBoardSize);
+
+    xPositions.forEach(function(x) {
+        yPositions.forEach(function(y) {
+            var sqs = svg.append('rect')
+                    .attr('x', x*sqWidth)
+                    .attr('y', y*sqWidth)
+                    .attr('width', sqWidth *.9)
+                    .attr('height', sqHeight *.9)
+                    .attr('class', 'board-sq');
+
+        })
+    });
+
+    timer
+
+
+</script>
+
+
+</body>
+</html>

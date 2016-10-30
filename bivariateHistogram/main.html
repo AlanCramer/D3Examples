@@ -1,0 +1,262 @@
+<html>
+
+<script src='d3.min.js'></script>
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.bar {
+  fill: blue;
+  opacity: .7;
+
+}
+.dot {
+  //stroke: #000;
+  r: 4;
+  opacity: .1;
+}
+
+input {
+  margin-left: 50;
+}
+
+</style>
+<body>
+
+  <h1> Bivariate Distribution </h1>
+  <svg id='top-histogram'>
+    <g id='hist-container'>
+      <g class='y axis'></g>
+    </g>
+  </svg>
+  <svg id='graphic' style='display:block'></svg>
+  <p>
+    <label for="xDev" style="display: inline-block; width: 240px;">
+       x Deviation = <span id="xDev-value">0</span>
+    </label>
+    <input type="range" min="0" max="3" value='1' step='.05' id="xDev" style='float:left'>
+  </p>
+  <p>
+    <label for="yDev" style="display: inline-block; width: 240px;">
+       y Deviation = <span id="yDev-value">0</span>
+    </label>
+    <input type="range" min="0" max="3" value='.1' step='.05' id="yDev" style='float:left'>
+  </p>
+
+<script>
+
+    function updateXDevSlider(val) {
+      d3.select('#xDev-value')
+        .text(val);
+    };
+    function updateYDevSlider(val) {
+      d3.select('#yDev-value')
+        .text(val);
+    };
+    function updateData(newData) {
+      var dots = svg.selectAll(".dot")
+          .data(newData);
+
+      dots
+        .transition().duration(transDur)
+          .attr("cx", function(d) {return x(d.x); })
+          .attr("cy", function(d) {return y(d.y); })
+
+      updateTopHistogram(width, height, displayRange, data);
+    };
+    function updateXData(deviation) {
+
+      var newGauss = d3.random.normal(0, deviation);
+
+      data.forEach(function(d) {
+        d.x = newGauss();
+      });
+
+      updateData(data);
+    };
+    function updateYData(deviation) {
+
+      var newGauss = d3.random.normal(0, deviation);
+
+      data.forEach(function(d) {
+        d.y = newGauss();
+      });
+
+      updateData(data);
+    };
+
+    d3.select("#xDev").on("input", function() {
+      updateXDevSlider(+this.value);
+    });
+    d3.select("#xDev").on("change", function() {
+      updateXDevSlider(+this.value);
+      updateXData(+this.value);
+    });
+    d3.select("#yDev").on("input", function() {
+      updateYDevSlider(+this.value);
+    });
+    d3.select("#yDev").on("change", function() {
+      updateYDevSlider(+this.value);
+      updateYData(+this.value);
+    });
+    var xInit = 1;
+    var yInit = 0.1;
+    var numPoints = 1000;
+    var transDur = 500; // ms for tranistions
+
+    updateXDevSlider(xInit); // initialize
+    updateYDevSlider(yInit);
+
+    var start = new Date().getTime();
+
+    var data = d3.range(0,numPoints);
+    var gaussianX = d3.random.normal(0, xInit);
+    var gaussianY = d3.random.normal(0, yInit);
+
+    console.log( gaussianX() ) ;
+
+    data = data.map(function(d) {
+      return {
+        x: gaussianX(),
+        y: gaussianY()
+      };
+    });
+
+    console.log(new Date().getTime() - start);
+
+    var displayRange = [-10, 10];
+    var margin = {top: 0, right: 20, bottom: 40, left: 40},
+        width = 400 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+        .domain(displayRange)
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .domain(displayRange)
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var svg = d3.select('#graphic')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+      .append("text")
+        .attr("class", "label")
+        .attr("x", width)
+        .attr("y", -6)
+        .style("text-anchor", "end");
+        //.text("X Axis ");
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+      .append("text")
+        .attr("class", "label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end");
+        //.text("Y Axis")
+
+    svg.selectAll(".dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("class", "dot")
+        .attr("cx", function(d) {
+          return x(d.x); })
+        .attr("cy", function(d) {
+          return y(d.y); })
+        .style("fill", 'blue');
+
+   function updateTopHistogram(width, height, displayRange, data) {
+
+     // first calculate the data
+    var binCount = 10;
+    var binWidth = (displayRange[1] - displayRange[0]) / binCount;
+    var offset = -displayRange[0] / 2;
+    var bins = d3.range(binCount).fill(0);
+    data.forEach(function (d) {
+        var tmp = Math.floor(d.x / binWidth) + offset;
+        (tmp >= binCount || tmp < 0) ?
+          console.log('Data point ' + d + ' out of bounds') :
+          bins[tmp]++;
+    });
+
+    // now draw it
+    var histWidth = width;
+    var histMargin = {top: 20, right: margin.right, bottom: 0, left: margin.left};
+
+    var histHeight = height/4;
+    var histSvg = d3.select('#top-histogram')
+         .attr("width", histWidth + histMargin.left + histMargin.right)
+         .attr("height", histHeight + histMargin.top + histMargin.bottom);
+
+    var hist = histSvg.select('#hist-container')
+         .attr("transform", "translate(" + histMargin.left + "," + histMargin.top + ")");
+
+    var x = d3.scale.ordinal()
+        .domain(d3.range(binCount))
+        .rangeRoundBands([0, histWidth], .1);
+
+    var y = d3.scale.linear()
+        .domain(d3.extent(bins))
+        .range([histHeight, 0]);
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(5)
+        ;
+
+    var d3YAxis = d3.select('#top-histogram').select('.y.axis');
+
+    d3YAxis
+      .transition().duration(transDur) // hist axis cool animation
+      .call(yAxis);
+
+    //d3.selectAll('.bar').remove();
+
+    var barSel = hist.selectAll(".bar")
+        .data(bins);
+
+    barSel.exit().remove();
+
+    barSel.enter()
+      .append("rect")
+      .attr("class", "bar");
+
+    barSel.transition().duration(transDur)
+        .attr("x", function(d,i) { return x(i); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d); })
+        .attr("height", function(d) { return histHeight - y(d); });
+   }
+
+   updateTopHistogram(width, height, displayRange, data);
+
+</script>
+</body>
+</html>

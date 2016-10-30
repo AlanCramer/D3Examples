@@ -1,0 +1,117 @@
+<html>
+
+<head>
+<script src="d3/d3.v4.min.js"></script>
+</head>
+
+
+<body>
+
+<div id='title'></div>
+<div id='mainBody'>
+	
+	<p>
+	Apparently, according to Nate Silver, some goats will chase people that run at a constant speed. The goat runs right at the person. And most people seem to run in a straight line for the exit gate. 
+
+	<div id='goatChasingGraphic'></div>
+
+	<p>
+	Let's try to watch in slow motion. The person and the goat move at (different) contant speeds.
+	<button onclick='gcgStartAnimation()'>Start</button>
+
+</div>
+
+
+
+<script>
+
+	var buildTitle = function() {
+		d3.select('#title').append('h1').text('About Goats that Chase People');
+	};
+
+	var buildGoatChasingGraphic = function(width, height) {
+
+		var container = d3.select('#goatChasingGraphic');
+
+		var svg = container.append('svg')
+			.attr('width', width)
+			.attr('height', height);
+
+		return svg;
+	};
+
+	// svg is a d3 selection of a svg that will hold the graphic 
+	var updateGoatChasingGraphic = function (svg, data, xdist, ydist, goatCurve, style) {
+
+		var x = d3.scale.linear()
+			.range([0, width])
+			.domain([0, xdist]);
+
+		var y = d3.scale.linear()
+			.range([height, 0])
+			.domain([0, d3.max(data)]);
+
+		svg.selectAll('personPt')
+			.data(data)
+		  .enter()
+		    .append('circle')
+		    .attr('class', 'personPt')
+		    .attr('cx', function(d) { return x(d);})
+		    .attr('cy', function(d) { return y(0);})			  	
+		    .attr('r', style.personRad);
+
+		svg.selectAll('goatPt')
+			.data(data)
+		  .enter()
+		    .append('circle')
+		    .attr('class', 'goatPt')
+		    .attr('cx', function(d) { return x(d);})
+		    .attr('cy', function(d) { return y(goatCurve(d));})			  	
+		    .attr('r', style.goatRad)
+		    .attr('fill', 'red');
+	}
+
+	var gcgStartAnimation = function() {
+
+		var ct = 0;
+		
+		d3.interval(function(){
+
+			var svg = d3.select('goatChasingGraphic.svg');
+
+			svg.selectAll('goatPt')
+				.style('visibility', function(d) { return d <= ct});
+
+			ct++;
+				
+		}, 1000);
+	}
+
+	var width = 300;
+	var height = 300;
+	var xdist = 10;
+	var ydist = 10;
+
+	var data = d3.range(0, xdist);
+
+	var styleConfig = {
+		personRad : 10,
+		goatRad : 10		
+	};
+
+	var goatCurve = function(t) { return ydist*(1/(1+t));};
+
+    buildTitle();
+    var svg = buildGoatChasingGraphic(width, height);
+    updateGoatChasingGraphic(svg, data, xdist, ydist, goatCurve, styleConfig);
+
+    
+
+
+</script>
+
+</body>
+
+
+</html>
+

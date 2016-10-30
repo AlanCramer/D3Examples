@@ -1,0 +1,860 @@
+<html>
+
+<head>
+<script src="d3/d3.min.js"></script>
+
+<style>
+    border: 1px solid blue; // temporary
+    display: flex;
+    flex-direction: column;
+    padding: 5% 10%;
+
+    label {
+        margin-bottom: 0; // Override an overly broad selector
+    }
+
+
+    path {
+        stroke: steelblue;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    line {
+        stroke: black;
+    }
+
+    text {
+        font-family: Arial;
+        font-size: 9pt;
+    }
+
+    .header {
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-title {
+        height: auto;
+        font-size: 30px;
+        margin-right: 50px;
+    }
+
+    .timeframeButtonContainer {
+        display: flex;
+        align-items: center;
+        margin-right: 50px;
+
+
+    }
+
+
+        .timeframeButton {
+            font-size: 1.5em;
+            margin-right: 20px;
+
+            &:hover,
+            &.selected {
+                color: blue;
+            }
+        }
+
+
+    .super-line {
+        stroke-width: 4;
+    }
+
+    .super-dot {
+        stroke: steelblue;
+        stroke-width: 3px;
+        fill: white;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .tick line {
+      opacity: 0.2;
+    }
+
+    .x.axis
+    .domain {
+        display: none;
+    }
+
+    .y.axis
+    .domain {
+        display: none;
+    }
+
+    .area {
+        fill: #E9F3Fd;
+        stroke-width: 0px;
+    }
+
+    .overlay {
+        fill-opacity: 0;
+        cursor: move;
+    }
+
+    .noSessionData {
+        stroke: firebrick;
+    }
+
+    .navigator .data {
+        fill: lightgrey;
+        stroke-width: 0px;
+    }
+
+    .navigator .line {
+        fill: none;
+        stroke: darkgrey;
+        stroke-width: 1px;
+    }
+
+</style>
+
+
+</head>
+
+
+<body>
+
+<script>
+
+    var margin = {top: 50, right: 50, bottom: 50, left: 50},
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom,
+    tickPadding = 15,// pixels ... feels like a fudge factor, what should it really be?
+    chartModel;
+
+    // This function originated from mbostock's gist: https://gist.github.com/mbostock/5827353
+    var weekday = (function() {
+        // Returns the weekday number for the given date relative to January 1, 1970.
+        function weekday(date) {
+            var weekdays = weekdayOfYear(date),
+                year = date.getFullYear();
+            while (--year >= 1970) {
+                weekdays += weekdaysInYear(year);
+            }
+            return weekdays;
+        }
+
+        // Returns the date for the specified weekday number relative to January 1, 1970.
+        weekday.invert = function(weekdays) {
+            var year = 1970,
+                yearWeekdays;
+
+            // Compute the year.
+            while ((yearWeekdays = weekdaysInYear(year)) <= weekdays) {
+                ++year;
+                weekdays -= yearWeekdays;
+            }
+
+            // Compute the date from the remaining weekdays.
+            var days = weekdays % 5,
+                day0 = ((new Date(year, 0, 1)).getDay() + 6) % 7;
+            if (day0 + days > 4) {
+                days += 2;
+            }
+            return new Date(year, 0, parseInt(weekdays / 5) * 7 + days + 1);
+        };
+
+        // Returns the number of weekdays in the specified year.
+        function weekdaysInYear(year) {
+            return weekdayOfYear(new Date(year, 11, 31)) + 1;
+        }
+
+        // Returns the weekday number for the given date relative to the start of the year.
+        function weekdayOfYear(date) {
+            var days = d3.time.dayOfYear(date), // e.g. 236
+                weeks = parseInt(days / 7), // e.g. 33
+                day0 = (d3.time.year(date).getDay() + 6) % 7,
+                day1 = day0 + days - weeks * 7;
+            return Math.max(0, days - weeks * 2 -
+                (day0 <= 5 && day1 >= 5 || day0 <= 12 && day1 >= 12) - // extra saturday
+                (day0 <= 6 && day1 >= 6 || day0 <= 13 && day1 >= 13)); // extra sunday
+        }
+
+        return weekday;
+    })();
+
+    console.log('weekday(today)', weekday(new Date()));
+    console.log('weekday.invert(weekday(today))', weekday.invert(weekday(new Date())));
+
+    function createLinearChart(container, chartModel) {
+
+        var data = chartModel.allData;
+
+        // Start modifying the DOM
+        var header = container.select('div.header');
+        if (header.empty()) {
+            console.log('Header is null. Going to append one to the root container...');
+            header = container.append('div')
+                .attr('class', 'header');
+        }
+
+        var title = header.select('label.chart-title');
+        if (title.empty()) {
+            console.log('Title is null. Going to append one to the header...');
+            header.append('label')
+                .attr('class', 'chart-title')
+                .text(chartModel.title);
+        }
+
+        var timeframeButtonContainer = header.select('div.timeframeButtonContainer');
+
+        if (timeframeButtonContainer.empty()) {
+            console.log('timeframeButtonContainer is null. Going to append one to the header...');
+            timeframeButtonContainer = header.append('div')
+                .attr('class', 'timeframeButtonContainer');
+            createTimeframeButtons(timeframeButtonContainer, container);
+        }
+
+        var plotChart = container.select('svg.plotChart');
+
+        if (plotChart.empty()) {
+            console.log('plotChart is null. Going to append one to the root container...');
+            plotChart = container.append('svg')
+                //.attr('viewbox', '0,0,400,400')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                //.attr('class', 'plotChart')
+                .append('g')
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                .attr('class', 'plotChart');
+        } else {
+            plotChart = plotChart.append('g')
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+        }
+
+        var plotArea = plotChart.append('g')
+            .attr('clip-path', 'url(#plotAreaClip)')
+            .attr('id', 'plot-area'); // sort of assumes each plotChart has one and only one plotArea
+
+        plotArea.append('clipPath')
+            .attr('id', 'plotAreaClip')
+            .append('rect')
+            .attr('width', width)
+            .attr('height', height);
+
+        plotArea.append('path')
+            .datum(data)
+            .attr('class', 'area');
+
+        plotChart.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')');
+
+        plotChart.append('g')
+            .attr('class', 'y axis')
+            .append('text')
+            .attr('transform', 'translate(' + (-tickPadding) + ',-30)')
+            .attr('y', 6)
+            .attr('dy', '.71em')
+            .style('text-anchor', 'middle')
+            .text('Minutes');
+
+        plotArea.append('path')
+            .attr('class', 'super-line');
+
+        //createNavChart(container, chartModel.data);
+    }
+
+    function createNavChart(container, data) {
+
+        var navWidth = width,
+            navHeight = 100 - margin.top - margin.bottom;
+
+        var minDate = d3.min(data, function (d) {
+            return d.date;
+        });
+        var maxDate = d3.max(data, function (d) {
+            return d.date;
+        });
+
+        var navChart = container.select('svg.plotChart').classed('chart', true).append('svg')
+            .classed('navigator', true)
+            .attr('width', navWidth + margin.left + margin.right)
+            .attr('height', navHeight + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+        var navXScale = d3.time.scale()
+            .domain([minDate, maxDate])
+            .range([0, navWidth]);
+        //navYScale = d3.scale.linear()
+        //    .domain([yMin, yMax])
+        //    .range([navHeight, 0]);
+
+        var navXAxis = d3.svg.axis()
+            .scale(navXScale)
+            .orient('bottom');
+
+        navChart.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + navHeight + ')')
+            .call(navXAxis);
+
+
+    }
+
+    function updateNavChart(data, minDate, maxDate) {
+
+    }
+
+    function updateLinearChart(container, chartModel) {
+
+        var t = d3.transition()
+        	.duration(4000); // doesn't seem to work
+
+        // Some config work
+        var data = chartModel.data;
+
+        //var numDataPoints = 6;
+        var lastDataIndex = data.length - 1;
+        var startDataIndex = d3.max([0, lastDataIndex - chartModel.numDataPointsShown + 1]);
+
+        var minDate = d3.min(data, function (d) {
+            return d.date;
+        });
+        var maxDate = d3.max(data, function (d) {
+            return d.date;
+        });
+
+        //updateNavChart(data, minDate, maxDate);
+
+        var formatDate = d3.time.format('%d-%b-%y');
+        var parseDate = d3.time.format('%d-%b-%y').parse;
+        var parseWeek = d3.time.format('%U');
+
+        var minZoomScale = 1,
+            maxZoomScale = 1;
+
+        // Set up D3 scales, SVG generators, and behaviors
+        var x = d3.time.scale()
+            .domain([data[startDataIndex].date, data[lastDataIndex].date])
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .domain([0, d3.max(data, function (d) {
+                return d.value;
+            })])
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .ticks(6)
+            .orient('bottom')
+            .tickFormat(function (d) {
+                return formatDate(d);
+            });
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .ticks(6)
+            .orient('left')
+            .innerTickSize(-width)
+            .tickPadding(tickPadding);
+
+        var line = d3.svg.line()
+            .x(function (d) {
+                return x(d.date);
+            })
+            .y(function (d) {
+                return y(d.value);
+            });
+
+        var area = d3.svg.area()
+            .x(function (d) {
+                return x(d.date);
+            })
+            .y0(height)
+            .y1(function (d) {
+                return y(d.value);
+            });
+
+        var overlay = d3.svg.area()
+            .x(function (d) {
+                return x(d.date);
+            })
+            .y0(height)
+            .y1(0);
+
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([minZoomScale, maxZoomScale])
+            .on('zoom', draw);
+
+        zoom.x(x);
+
+        // is this the right selection? Seems like
+        // if we wanted 2 charts on one page, each would have it's own id
+        // made update should take plotChart as input?
+        //
+        var plotChart = d3.select('svg g.plotChart'),
+            //plotChartG = plotChart.select('.plotChartG'),
+            plotArea = plotChart.select('#plot-area');
+
+        plotChart.select('.x.axis')
+        	.transition(t)
+        	.duration(2000)
+            .call(xAxis);
+
+        plotChart.select('.y.axis')
+            .call(yAxis);
+
+        //plotArea.select('path')
+        //    .attr('d', line);
+
+        var supDots = plotChart.selectAll('.super-dot')
+            .data(data);
+            
+        supDots
+            .enter()
+            .append('circle')
+            .attr('class', 'super-dot');
+
+        supDots
+        	.transition(t)
+       		.duration(2000)
+            .attr('cx', function (d) {
+                return x(d.date);
+            })
+            .attr('cy', function (d) {
+                return y(d.value);
+            })
+            // .classed('noSessionData', function (d) {
+            //     return !d.value; // TODO: Should this check for undefined? Checking for zero, currently...
+            // })
+            .attr('r', 6);
+
+        supDots
+        	.exit()
+        	.transition(t).duration(2000)
+        	.attr('cx', function(d, i) { 
+        		x(data[Math.floor(i / 7)].date); })
+        	.attr('cy', function(d, i) { 
+        		y(data[Math.floor(i / 7)].value);})
+        	.remove();
+
+        plotArea.select('path.area')
+        	.transition(t)
+        	.duration(2000)
+        	.attr('d', area(data));
+
+        plotArea.select('path.super-line')
+            .transition(t)
+        	.duration(2000)
+        	.attr('d', line(data));
+
+        plotArea.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', 'overlay')
+            .call(zoom);
+
+        function draw() {
+            var t = zoom.translate(),
+                tx = t[0],
+                ty = t[1],
+                newX;
+
+            if (x.domain()[0] < minDate) {
+                newX = tx - x(minDate) + x.range()[0];
+                zoom.translate([newX, 0]);
+            } else if (x.domain()[1] > maxDate) {
+                newX = tx - x(maxDate) + x.range()[1];
+                zoom.translate([newX, 0]);
+            }
+
+            plotChart.select('g.x.axis').call(xAxis);
+            plotChart.select('g.y.axis').call(yAxis);
+            plotArea.select('path.area').attr('d', area(data));
+            plotArea.select('path.super-line').attr('d', line(data));
+            plotChart.selectAll('circle.super-dot')
+                .attr('cx', function (d) {
+                    return x(d.date);
+                })
+                .attr('cy', function (d) {
+                    return y(d.value);
+                })
+                .style('visibility', function (d, index) {
+                    var cx = x(d.date);
+
+                    if (cx > x.range()[1] || cx < x.range()[0]) {
+                        return 'hidden';
+                    } else {
+                        return 'visible';
+                    }
+                });
+        }
+    }
+
+    function createTimeframeButtons(timeframeButtonContainer, directiveContainer) {
+        // Weekly
+        timeframeButtonContainer.append('label')
+            .attr('class', 'timeframeButton')
+            .on('click', function () {
+                //clearSvgElements(directiveContainer);
+                //createLinearChart(directiveContainer, chartModel);
+                updateLinearChart(directiveContainer, foldDaily(chartModel));
+                d3.selectAll('label.timeframeButton')
+                    .classed('selected', false);
+                d3.select(this).classed('selected', true);
+            })
+            .classed('selected', true) // selected by default
+            .text('Weekly');
+
+        // Monthly
+        timeframeButtonContainer.append('label')
+            .attr('class', 'timeframeButton')
+            .on('click', function () {
+                //clearSvgElements(directiveContainer);
+                //createLinearChart(directiveContainer, chartModel);
+                updateLinearChart(directiveContainer, foldWeekly(chartModel));
+                d3.selectAll('label.timeframeButton')
+                    .classed('selected', false);
+                d3.select(this).classed('selected', true);
+            })
+            .text('Monthly');
+
+        // Annually
+        timeframeButtonContainer.append('label')
+            .attr('class', 'timeframeButton')
+            .on('click', function () {
+                //clearSvgElements(directiveContainer);
+                //createLinearChart(directiveContainer, foldMonthly(chartModel));
+                updateLinearChart(directiveContainer, foldMonthly(chartModel));
+                d3.selectAll('label.timeframeButton')
+                    .classed('selected', false);
+                d3.select(this).classed('selected', true);
+            })
+            .text('Yearly');
+    }
+
+    function clearSvgElements(container) {
+        container.select('svg.plotChart')
+            .selectAll('*')
+            .remove();
+    }
+
+        // Helper functions
+    function generateData(startDate, endDate, minVal, maxVal) {
+        var data = [],
+            date = new Date(startDate), // copy startDate
+            weekday,
+            randomNum;
+
+        var distributionWeekdays = combineDistributions([
+            {
+                prob: 0.01,
+                dist: function() {
+                    return 0;
+                }
+            },
+            {
+                prob: 0.99,
+                dist: function() {
+                    return randomIntInclusive(minVal, maxVal);
+                }
+            }
+        ]);
+
+        var distributionWeekends = combineDistributions([
+            {
+                prob: 0.95,
+                dist: function() {
+                    return 0;
+                }
+            },
+            {
+                prob: 0.05,
+                dist: function() {
+                    return randomIntInclusive(minVal, maxVal);
+                }
+            }
+        ]);
+
+        while (date <= endDate) {
+            weekday = date.getDay();
+
+            if (weekday !== 0 && weekday !== 6) {
+                data.push({
+                    date: new Date(date),
+                    value: distributionWeekdays()
+                });
+            } else {
+                data.push({
+                    date: new Date(date),
+                    value: distributionWeekends()
+                });
+            }
+
+            date.setDate(date.getDate() + 1);
+        }
+
+        return data;
+    }
+
+    function combineDistributions(probabilityDistributionPairings) {
+        /* Input should be of the form:
+            [
+                {
+                    prob: 0.4,
+                    dist: function() {...}
+                },
+                {
+                    prob: 0.6,
+                    dist: function() {...}
+                }
+            ]
+        */
+        return function() {
+            var randomNum = Math.random(),
+                cumulativeProbability = 0,
+                result;
+
+            probabilityDistributionPairings.forEach(function(pair) {
+                cumulativeProbability += pair.prob;
+
+                if (randomNum <= cumulativeProbability && result === undefined) {
+                    result = pair.dist();
+                }
+            });
+
+            if (result === undefined) {
+                console.log('Something went wrong - could not generate a number from the combined distribution');
+            }
+
+            return result;
+        };
+    }
+
+    function updateChartPointsShown(newNum, id, onDone) {
+
+        chartModel.numDataPointsShown += (newNum > chartModel.numDataPointsShown) ? +1 : -1;
+
+        // since the data doesn't actually change, the enter/exit doesn't update the supdots
+        // probably should use ShownData or something...
+        updateLinearChart(d3.select('report-linear-chart'), chartModel);
+
+        if (chartModel.numDataPointsShown >= chartModel.data.length ||
+            chartModel.numDataPointsShown <= 0 ||
+            Math.abs(newNum - chartModel.numDataPointsShown) < 2) {
+            clearInterval(id);
+
+        	if (onDone) {
+        		onDone(chartModel);
+        	}
+        }
+    }
+
+    function foldDaily(chartModel) {
+
+        chartModel.numDataPointsShown = 7;
+        chartModel.data = chartModel.allData;
+		updateLinearChart(d3.select('report-linear-chart'), chartModel);
+
+        return chartModel;
+    }
+
+    function foldWeekly(chartModel) {
+
+        // var newNum = 42; // 7days/week * 6 weeks
+        // var duration = 1500;
+        // var frameCt = Math.abs(newNum - chartModel.numDataPointsShown);
+        // var id = setInterval(function () {
+        //     updateChartPointsShown(42, id);
+        // }, duration / frameCt);
+
+        var t0 = d3.transition();
+        var dataCt = chartModel.allData.length;
+        chartModel.numDataPointsShown = 42;
+		updateLinearChart(d3.select('report-linear-chart'), chartModel);
+
+        // truncate
+        //var t1 = d3.transition().delay(2000).duration(2000);
+        // don't like this, but this seems to let me start the second update after the first
+        // is completed. I can't seem to get traditional chained transitions to work.
+        setTimeout(function() {
+   	        chartModel.numDataPointsShown = 6;
+	        chartModel.data = chartModel.weeklyData;
+	        updateLinearChart(d3.select('report-linear-chart'), chartModel);
+	    }, 2000);
+
+        return chartModel;
+    }
+
+    function foldMonthly(chartModel) {
+
+        var dataCt = chartModel.allData.length;
+        var shownDataCt = chartModel.numDataPointsShown = chartModel.allData.length;
+		chartModel.shownData = chartModel.allData.slice(dataCt - shownDataCt, dataCt);
+        updateLinearChart(d3.select('report-linear-chart'), chartModel);
+        return chartModel;
+
+        //var data = chartModel.data;
+        //var monthlyChartModel = {
+        //    title: chartModel.title,
+        //    data: null
+        //};
+
+        //var dataGroupedByMonth = data.reduce(function (dataGroupedByMonth, d) {
+        //    var month = d.date.getMonth();
+        //
+        //    if (!dataGroupedByMonth[month]) {
+        //        dataGroupedByMonth[month] = [d];
+        //    } else {
+        //        dataGroupedByMonth[month].push(d);
+        //    }
+        //
+        //    return dataGroupedByMonth;
+        //}, {});
+        //
+        //var monthlyDataArr = [];
+        //
+        //for (var monthNum in dataGroupedByMonth) {
+        //    if (dataGroupedByMonth.hasOwnProperty(monthNum)) {
+        //        var monthArr = dataGroupedByMonth[monthNum];
+        //        monthlyDataArr.push(monthArr);
+        //    }
+        //}
+        //
+        //monthlyDataArr = monthlyDataArr.map(function (monthArr) {
+        //    var valueSum = monthArr.reduce(function (sum, d) {
+        //        return sum + d.value;
+        //    }, 0);
+        //    var numDays = monthArr.length;
+        //    var avgValue = valueSum / numDays;
+        //    return {
+        //        date: new Date(monthArr[0].date.getTime()),
+        //        value: avgValue
+        //    };
+        //});
+        //
+        //monthlyChartModel.data = monthlyDataArr;
+        //
+        //return monthlyChartModel;
+    }
+
+
+  //   function animateMerge(chartModel) {
+
+  //   	var data = chartModel.data;
+		// // phase 2, collect by week and animate coalescing
+  //       var minDate = d3.min(data, function (d) {
+  //           return d.date;
+  //       });
+  //       var maxDate = d3.max(data, function (d) {
+  //           return d.date;
+  //       });
+  //       var curr = new Date();
+  //       var weekAgo = new Date(curr.setDate(maxDate.getDate() - 7));
+
+  //       var lastWeekDots = d3.selectAll('.super-dot')
+  //           .filter(function(d, i) {
+  //               return d.date > weekAgo;
+  //           });   
+
+  //       var lastDataIndex = data.length - 1;
+  //       var startDataIndex = d3.max([0, lastDataIndex - chartModel.numDataPointsShown + 1]);
+
+  //       var x = d3.time.scale()
+  //           .domain([data[startDataIndex].date, data[lastDataIndex].date])
+  //           .range([0, width]); 
+
+  //       var y = d3.scale.linear()
+  //           .domain([0, d3.max(data, function (d) {
+  //               return d.value;
+  //           })])
+  //           .range([height, 0]);
+
+  //       lastWeekDots.transition()
+  //       	.duration(1500)
+  //       	.attr('cx', x(maxDate))
+  //       	.attr('cy', y(26)); // just to test
+
+  //   }
+
+    // function randomDate(start, end) {
+    //     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    // }
+
+    function randomIntInclusive(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function sortDatesByTime(d1, d2) {
+        var t1 = d1.getTime(),
+            t2 = d2.getTime();
+
+        if (t1 === t2) {
+            return 0;
+        }
+
+        return t1 < t2 ? -1 : 1;
+    }
+            
+	//
+	// build the page
+	//
+	d3.select('body').append('h1').text('Hello World.');
+	var container = d3.select('body').append('div').attr('id', 'container');
+	var header = container.append('div').attr('class', 'header');
+
+	chartModel = {
+	    title: 'Linear Chart',
+	    allData: generateData(new Date(2016, 0, 1), new Date(), 0, 50).sort(function (d1, d2) {
+	        return sortDatesByTime(d1.date, d2.date);
+	    }),
+	    numDataPointsShown : 6,
+	    data : [], // points at what is displayed
+	    weeklyData : [],
+	    monthlyData : []
+	};
+	chartModel.data = chartModel.allData;
+	var dataCt = chartModel.allData.length;
+
+	
+	var accum = 0;
+	var temp;
+	for (var iData = dataCt - 1; iData >= 0; iData--) {
+
+		accum += chartModel.allData[iData].value;
+
+		if ((dataCt - iData) % 7 === 1) {
+			var x = chartModel.allData[iData];
+			var clone = { 
+				date : new Date(x.date),
+				value : x.value
+			}
+			chartModel.weeklyData.push(clone);
+		} 
+
+		if ((dataCt - iData) % 7 === 0) {
+			chartModel.weeklyData[chartModel.weeklyData.length -1].value = accum / 7;
+			accum = 0;
+		}
+	
+	}
+	chartModel.weeklyData.sort(function (d1, d2) {
+	    return sortDatesByTime(d1.date, d2.date);
+	});
+
+
+	createLinearChart(container, chartModel);
+	updateLinearChart(container, chartModel);
+
+</script>
+
+</body>
+
+
+</html>
+

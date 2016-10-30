@@ -1,0 +1,134 @@
+<html>
+<head>
+<script src='d3/d3.min.js'></script>
+
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+
+
+</head>
+
+<body>
+
+<h1 id='title'>About Geometries</h1>
+
+<p id='p-field'>
+Imagine you are on a flat field and could walk in any direction. The time it takes to get to another place maps exactly to the Euclidean distance to that point. 
+
+<p id='p-field-fwy'>
+Now imagine that there is a freeway in the middle of your field. The geometry is the same for points on the same side of the freeway. But it is just not possible to get to the other side. 
+
+<p id='p-fwy-overpass'>
+Now, fortunately, someone built an overpass so it is possible to get to the other side. If you are near the freeway and want to get directly across from where you are, you would have to walk first to the overpass and then to the opposite side of where you started. 
+
+
+<script type="text/javascript">
+
+	d3.select('body')
+		.insert('h3', '#title + *')
+		.text('like Euclidean and others');
+
+	var svgFieldFwy = d3.select('body')
+		.insert('svg', '#p-field-fwy + *');
+
+	svgFieldFwy.attr('height', 100)
+		.append('circle')
+			.attr('cx', 150)
+			.attr('cy', 50)
+			.attr('r', 4)
+			.style('fill', 'red');
+
+	svgFieldFwy.append('line')
+		.attr('x1', 100)
+		.attr('y1', 100)
+		.attr('x2', 300)
+		.attr('y2', 0)
+		.style('stroke', 'black');
+
+
+
+	var nodes = [
+		{'x' : 0, 'y' : 0},
+		{'x' : 1, 'y' : 0},
+		{'x' : 2, 'y' : 0},
+		{'x' : 0, 'y' : 1},
+		{'x' : 1, 'y' : 1},	
+		{'x' : 1, 'y' : 1},
+		{'x' : 0, 'y' : 2},
+		{'x' : 1, 'y' : 2},
+		{'x' : 2, 'y' : 2}
+	];	
+	var links = [
+		{'source' : 0, 'target' : 1, 'w' : 1},
+		{'source' : 0, 'target' : 3, 'w' : 1},
+		{'source' : 1, 'target' : 4, 'w' : 1},
+		{'source' : 1, 'target' : 2, 'w' : 1},	
+		{'source' : 2, 'target' : 5, 'w' : 1},
+		{'source' : 3, 'target' : 4, 'w' : 1},
+		{'source' : 3, 'target' : 6, 'w' : 1},
+		{'source' : 4, 'target' : 7, 'w' : 1},
+		{'source' : 4, 'target' : 5, 'w' : 0.5},
+		{'source' : 5, 'target' : 8, 'w' : 1},
+		{'source' : 6, 'target' : 7, 'w' : 1},
+		{'source' : 7, 'target' : 8, 'w' : 1}
+	];	
+
+	var width = 600,
+		height = 300;
+
+	var force = d3.layout.force()
+		.charge(-120)
+		.linkDistance(function(lnk, i){
+			return 40 * lnk.w;
+		})
+		.size([width, height])
+		.nodes(nodes)
+		.links(links)
+		.start();
+
+	var svgFDG = d3.select('body')
+		.append('svg')
+		.attr('width', width)
+		.attr('height', height);
+
+	var link = svgFDG.selectAll('.link')
+		.data(links)
+      .enter().append('line')
+      	.attr('class', 'link')
+      	.style('stroke-width', 3);
+
+    var node = svgFDG.selectAll('.node')
+    	.data(nodes)
+    	.enter().append('circle')
+    	.attr('class', 'node')
+    	.attr('r', 7)
+    	.style('fill', 'blue');
+
+    force.on("tick", function() {
+    	link.attr("x1", function(d) { 
+    		return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    	node.attr("cx", function(d) { 
+    		return d.x; })
+        	.attr("cy", function(d) { return d.y; });
+    });
+
+</script>
+</body>
+
+</html>
+

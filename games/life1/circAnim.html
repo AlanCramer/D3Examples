@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+    svg {
+        border: 1px dashed gray;
+    }
+    #results, #container {
+        display: inline-block;
+        margin: 15px;
+    }
+    p {
+        margin: 15px;
+    }
+    td {
+        border: 1px solid #bbb;
+    }
+    .header {
+        font-weight: bold;
+    }
+</style>
+<body>
+<p id="user-agent"></p>
+<div id="container"></div>
+<table id="results">
+    <tr class="header">
+        <td>Circles</td>
+        <td>FPS</td>
+        <td>repaint [ms]</td>
+    </tr>
+</table>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+    /* global $, d3 */
+    var tests = [25, 50, 150, 250, 500, 750, 1000, 2000, 5000];
+
+    function updateResults(count, time, steps) {
+        var repaint = time / steps,
+                $tr = $("<tr>");
+        $tr.append("<td>" + count + "</td><td>" + (1000/repaint).toFixed(2) + "</td><td>" + repaint.toFixed(2) + "</td>");
+        $("#results").append($tr);
+    }
+
+    function test() {
+        var count,
+                maxX = 500,
+                maxY = 400,
+                maxSteps = 150,
+                radius = 15,
+                steps = 0,
+                svg,
+                circles = [],
+                circlesSel,
+                startTime,
+                circle,
+                i;
+
+        if (tests.length > 0) {
+            $("#container").empty();
+            count = tests.shift();
+        } else {
+            return;
+        }
+
+        svg = d3.select("#container").append("svg")
+                .attr("width", maxX)
+                .attr("height", maxY);
+
+        for (i = 0; i < count; i++) {
+            circle = {
+                x: maxX * Math.random(),
+                y: maxY * Math.random(),
+                radius: radius,
+                fill: 'red',
+                stroke: 'black',
+                strokeWidth: 2,
+                vx: Math.random(),
+                vy: Math.random()
+            };
+            circles.push(circle);
+        }
+
+        circlesSel = svg.selectAll("circle").data(circles);
+        circlesSel.enter().append("circle")
+                .attr({
+                    "r": function (d) { return d.radius; },
+                    "cx": function (d) { return d.x; },
+                    "cy": function (d) { return d.y; }
+                })
+                .style({
+                    "fill": function (d) { return d.fill; },
+                    "stroke": function (d) { return d.stroke; },
+                    "stroke-width": function (d) { return d.strokeWidth; }
+                });
+
+        // Start animation.
+        startTime = new Date().getTime();
+        d3.timer(step);
+
+        function step() {
+            var i, len, c, time;
+            for (i = 0, len = count; i < len; i++) {
+                c = circles[i];
+                if (c.x >= maxX || c.x <= 0) c.vx *= -1;
+                if (c.y >= maxY || c.y <= 0) c.vy *= -1;
+                c.x += c.vx;
+                c.y += c.vy;
+            }
+            circlesSel.attr({
+                "cx": function (d) { return d.x; },
+                "cy": function (d) { return d.y; }
+            });
+            if (steps < maxSteps) {
+                steps++;
+            } else {
+                time = new Date().getTime() - startTime;
+                updateResults(count, time, maxSteps);
+                test();
+                return true;
+            }
+        }
+    }
+
+    $(function () {
+        $("#user-agent").text(navigator.userAgent);
+        test();
+    });
+</script>
+</body>
+</html>

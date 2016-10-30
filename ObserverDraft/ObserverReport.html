@@ -139,17 +139,6 @@
         margin-top: 20px;
         width: 100%;
     }
-    .obs-data-table
-    tr {
-        height: 60px;
-    }
-
-    .obs-data-table
-    th {
-        font-weight: normal;
-        font-size: small;
-        background-color: #BFDAE3;
-    }
 
     .obs-data-table
     th {
@@ -194,6 +183,14 @@
         padding: 4px;
         text-align: center;
         font-size: 14px;
+    }
+    .obs-data-table
+    td
+    div {
+        height: 70px;
+        overflow: hidden;
+        display: table-cell;
+        vertical-align: middle;
     }
 
 
@@ -454,6 +451,7 @@
                 })
                 .enter()
                 .append('td')
+                .append('div')
                 .html(function (d) {
                     return d.value;
                 });
@@ -491,9 +489,6 @@
             d.lesson = d.workshop + "." + d.lesson;
             d.strand = d.strand === "Speaking_and_Listening" ? "Speaking and Listening" : d.strand;
         });
-
-        // replace Speaking_and_Listening with English
-
     };
 
     d3.json("studentObserverData.json", function (error, json) {

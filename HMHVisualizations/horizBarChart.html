@@ -1,0 +1,295 @@
+
+<html>
+<script src='../d3/d3.min.js'></script>
+
+<style>
+
+  .bar-chart-title {
+    display: block;
+    font-size: 20px;
+  }
+
+  .legend
+  svg {
+      width: 10px;
+      height: 10px;
+      display: inline;
+      padding-right: 15px;
+  }
+  .legend
+  svg
+  rect {
+      x: 0px;
+      y: 0px;
+      width: 10px;
+      height: 10px;
+  }
+
+  .legend-label {
+      padding-right: 40px;
+  }
+
+</style>
+
+
+
+<body>
+
+<script>
+
+var padding = 100;
+
+var updateBarChart = function(newData) {
+
+  var margin = {top: 20, right: 20, bottom: 30, left: 90},
+      width = 727 - margin.left - margin.right,
+      height = 450 - margin.top - margin.bottom;
+
+  var y0 = d3.scale.ordinal()
+      .rangeRoundBands([0, height]);
+
+  var y1 = d3.scale.ordinal();
+
+  var x = d3.scale.linear()
+      .range([0, width]);
+
+  y0.domain(newData.map(function(d) { return d.name; }));
+  y1.domain(d3.range(d3.max(newData.map(function(d) { return d.values.length; })) + 1))
+      .rangeRoundBands([0, y0.rangeBand()], 0.1);
+
+  // todo - when will we want a new xRange?
+  var dummy = chartModel.xRange ?
+     x.domain(chartModel.xRange) :
+     x.domain([0, d3.max(newData, function(d) {
+         return d3.max (d.values); }
+     )]);
+
+  var svg = d3.select('.horiz-bar-chart');
+  var svgg = d3.select('.horiz-bar-chart-svg-g');
+  //     .selectAll('.tick text')
+  //     .call(insertLinebreaks, 80, -140); // function of padding;
+
+  svgg.selectAll('.skill').remove();
+
+  var skills = svgg.selectAll('.skill')
+      .data(newData);
+
+  //skills.exit().remove();
+
+  skills.enter().append('g')
+      .attr('class', 'skill')
+      .attr('transform', function(d, i) {
+          var dist = y0(d.name) + 16; // total fudge factor ... todo, remove
+          return 'translate(0,' + dist + ')';
+      });
+
+  skillBars = skills.selectAll('.bar')
+      .data(function(d) {
+          return d.values; });
+
+  skillBars.exit().remove();
+
+  skillBars.enter().append('rect')
+      .attr('class', function(d, i) { return i % 2 ? 'bar level-a' : 'bar level-b';});
+
+  skillBars
+      .attr('x', function(d, i) { return padding; })
+      .attr('width', function (d) {
+          return x(d); })
+      .attr('y', function(d, i) {
+          return y1(i); })
+      .attr('height', function(d, i) {
+          return y1.rangeBand(); });
+
+  var yAxis = d3.svg.axis()
+      .scale(y0)
+      .orient('right')
+      .tickFormat(function(d) {
+          return d;
+      })
+      .tickSize(6)
+      ;
+  svg.select('.y.axis')
+    .attr('transform', 'translate(' + padding + ', 0)')
+    .call(yAxis)
+    .selectAll('.tick text')
+    .call(insertLinebreaks, 80, -140); // function of padding
+
+};
+
+var insertLinebreaks = function (text, width, xval) {
+  text.each(function() {
+      var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          y = text.attr('y'),
+          dy = parseFloat(text.attr('dy')),
+          tspan = text.text(null).append('tspan').attr('x', xval).attr('y', y).attr('dy', dy + 'em');
+
+      while (!!(word = words.pop())) {
+          line.push(word);
+          tspan.text(line.join(' '));
+          if (tspan.node().getComputedTextLength() > width) {
+              line.pop();
+              tspan.text(line.join(' '));
+              line = [word];
+              tspan = text.append('tspan').attr('x', xval).attr('y', y).attr('dy',
+                  ++lineNumber * lineHeight + dy + 'em').text(word);
+          }
+      }
+  });
+};
+
+var createFilterElements = function(container, chartModel) {
+
+  chartModel.filterData.forEach(function(fd) {
+
+     title.append('label')
+         .text(fd.name)
+         .attr('class', 'bar-chart-filter-button')
+         .on('click', function(d) {
+             console.log(fd);
+             //var newData = JSON.parse(JSON.stringify(chartModel.data));
+
+             var newData = chartModel.data.filter(function(d) {
+                 var keep = fd.keeperRows.find(function(kr) {
+                     return kr === d.name;});
+                 return !keep;
+             });
+             console.log(newData);
+
+             updateBarChart(newData);
+         });
+  });
+};
+
+var createLegend = function (container, fields) {
+
+    var tableRow = container.append('table')
+        .attr('class', 'legend')
+        .append('tr');
+
+    var tds = tableRow.selectAll('td')
+        .data(fields)
+        .enter()
+        .append('td');
+
+    tds.append('svg')
+        .append('rect')
+        .style('fill', function (d) {
+            return d.color;
+        });
+
+    tds.append('text')
+        .attr('class', 'legend-label')
+        .text(function (d) {
+            return d.name;
+        });
+};
+
+var createBarChart = function (container, chartModel) {
+
+  var title = container
+      .append('label')
+      .text(chartModel.title)
+      .attr('class', 'bar-chart-title');
+
+  if (chartModel.filterData) {
+      createFilterElements(container, chartModel);
+  }
+
+  var data = chartModel.data;
+
+  var margin = {top: 20, right: 20, bottom: 20, left: 90},
+      width = 727 - margin.left - margin.right,
+      height = 450 - margin.top - margin.bottom;
+
+  var y0 = d3.scale.ordinal()
+      .rangeRoundBands([0, height]);
+
+  var y1 = d3.scale.ordinal();
+
+  var x = d3.scale.linear()
+      .range([0, width]);
+
+  var yAxis = d3.svg.axis()
+      .scale(y0)
+      .orient('right')
+      // .tickFormat(function(d) {
+      //     return d;
+      // })
+      // .tickSize(6)
+      ;
+
+  var svg = container.append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .attr('class', 'horiz-bar-chart')
+    .append('g')
+      .attr('class', 'horiz-bar-chart-svg-g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+  y0.domain(data.map(function(d) { return d.name; }));
+  y1.domain(d3.range(d3.max(data.map(function(d) { return d.values.length; })) + 1))
+      .rangeRoundBands([0, y0.rangeBand()], 0.1);
+
+  var dummy = chartModel.xRange ?
+      x.domain(chartModel.xRange) :
+      x.domain([0, d3.max(data, function(d) {
+          return d3.max (d.values); }
+      )]);
+
+  svg.append('g')
+      .attr('class', 'y axis')
+      .attr('transform', 'translate(' + padding + ', 0)')
+      .call(yAxis)
+      .selectAll('.tick text')
+      .call(insertLinebreaks, 80, -140); // function of padding
+
+  updateBarChart(chartModel.data);
+
+    var legendFields = [
+    {
+        name: 'Level A',
+        color: '#90d953'
+    },
+    {
+        name: 'Level B',
+        color: '#f9c31d'
+    }
+];
+
+createLegend(container, legendFields);
+};
+
+
+var testData = [
+  { name: 'Some nice category', values: [5]},
+  { name: 'Another category', values: [10]},
+  { name: 'Another category 2', values: [4]},
+  { name: 'And another', values: [7]}
+];
+
+var chartModel = {
+  title: 'This is the title',
+  data: testData
+}
+
+createBarChart(d3.select('body'), chartModel);
+
+
+var newTestData = [
+  { name: 'Some new category', values: [3]},
+  { name: 'And another gth', values: [9]}
+];
+
+
+updateBarChart(newTestData);
+
+</script>
+</body>
+
+</html>
