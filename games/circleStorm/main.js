@@ -17,17 +17,22 @@ var colors = ['steelblue', 'chocolate'];
 
 var rowCt = 12;
 var dotRad = 9;
-var dur = 3000;
-var intvl = 3000;
+var dur = 1000;
+var intvl = 1200;
 
 var x = d3.scaleLinear()
     .domain([0, rowCt])
-    .range([0, width]);
+    .range([0, width/2]);
 
 var makeDots = function(name, ct, dotRad, dist) {
 
     var data = d3.range(ct).map(function(d) {
-        return { idx: d, dotRad: dotRad, dist: dist};
+        return {
+            idx: d,
+            dotRad: dotRad,
+            dist: dist,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        };
     });
 
     var r = d3.scaleLinear()
@@ -47,22 +52,20 @@ var makeDots = function(name, ct, dotRad, dist) {
             return dist * Math.sin(r(d.idx)) + height/2;
         })
         .style('fill', function(d, i) {
-            return colors[Math.floor(Math.random() * colors.length)];
+            return d.color;
         })
         ;
 }
 
-d3.range(1, 6).forEach(function(d) {
-    return makeDots('row' + d, 10, 9, x(d));
+d3.range(1, 8).forEach(function(d) {
+    return makeDots('row' + d, 10, 6, x(d));
 });
 
-
-
-
-
-var rotateDots = function(svg, name) {
+var rotateDots = function(svg, name, fwd) {
 
     var dots = svg.selectAll('circle.' + name );
+
+    var diff = fwd ? 1 : -1;
 
     var r = d3.scaleLinear()
         .domain([0, dots.size()])
@@ -71,7 +74,7 @@ var rotateDots = function(svg, name) {
     dots
         .each(function(d) {
             var tmp = d3.select(this).data();
-            tmp[0].idx = (tmp[0].idx + 1) % dots.size();
+            tmp[0].idx = (tmp[0].idx + diff) % dots.size();
         })
         .transition()
         .duration(dur)
@@ -83,5 +86,6 @@ var rotateDots = function(svg, name) {
         });
 }
 
-//window.setInterval(rotateDots, intvl, svg, 'row1');
-window.setInterval(rotateDots, intvl, svg, 'row3');
+// d3.range(1, 8).forEach(function(d) {
+//     window.setInterval(rotateDots, intvl, svg, 'row' + d, d%2===0);
+// });
