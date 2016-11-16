@@ -1,0 +1,24 @@
+
+body {
+    background: #aaaaff;
+}
+
+.top-level-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid black;
+    border-radius: 5px;
+    max-height: 600px;
+}
+
+.board {
+    border: 1px solid blue;
+    //max-height: 300px;
+}
+
+.navbar {
+    border: 1px solid red;
+    flex-shrink: 0;
+}

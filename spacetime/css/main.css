@@ -1,0 +1,13 @@
+
+body {
+    background: #0000ff;
+}
+
+.top-level-div {
+    display: flex;
+    height:auto;
+}
+svg {
+    margin: auto;
+
+}
