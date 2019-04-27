@@ -1,0 +1,22 @@
+<html>
+
+<svg width="800" height="400"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script>
+
+    let svg = d3.select('svg');
+    let data = d3.range(10).map((d,i) => ({x:i*50, y:300}));
+
+    svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y)
+        .attr('r', 10)
+
+</script>
+
+
+</html>

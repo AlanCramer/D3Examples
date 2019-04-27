@@ -1,0 +1,59 @@
+<html>
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    #sun {
+        fill: yellow;
+    }
+
+    .line {
+        stroke-width: 2;
+        stroke: black;
+        stroke-dasharray: .5em;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+    <svg id='chart' width=800 height=400></svg>
+
+<script>
+
+    let svg = d3.select('#chart');
+    let margin = {top: 40, right: 40, bottom: 40, left: 40},
+        width = +svg.attr('width') - margin.left - margin.right,
+        height = +svg.attr('height') - margin.top - margin.bottom;
+
+    let svgg = svg.append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    let fn = function (xval) { return xval * xval; };
+
+    let data = d3.range(20).map(function(i) { return { x: i-10, y:fn(i-10) }});
+
+    let xscale = d3.scaleLinear()
+        .domain([d3.min(data, d => d.x), d3.max(data, d => d.x)])
+        .range([0, width]);
+
+    let yscale = d3.scaleLinear()
+        .domain([d3.min(data, d => d.y), d3.max(data, d => d.y)])
+        .range([0, height]);
+        
+
+</script>
+
+
+</body>
+
+
+</html>

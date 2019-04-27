@@ -1,0 +1,116 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    path {
+        fill: none;
+        stroke: orange;
+        stroke-width: 3px;
+    }
+
+</style>
+
+<svg width=800 height=400></svg>
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height');
+
+    let dataPtCt = 7;
+    let data = d3.range(dataPtCt).map(i => [Math.random() * width, Math.random() * height]);
+
+    let duration = 3000;
+    let delay = 1500;
+
+    svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', width/2)
+        .attr('cy', height/2)
+        .attr('r', 5)
+        .attr('fill', 'red')
+        .transition()
+        .duration(duration)
+        .attr('cx', d=>d[0])
+        .attr('cy', d=>d[1])
+        ;
+
+    var voronoi = d3.voronoi()
+        .extent([[-1, -1], [width + 1, height + 1]]);
+
+    let polys = voronoi.polygons(data);
+
+    var polygons = svg.append("g")
+        .attr("class", "polygons")
+      .selectAll("path")
+      .data(polys)
+      .enter().append("path")
+        .call(redrawPolygon);
+
+    function redrawPolygon(polygon) {
+      polygon
+          .attr("d", function(d) { return d ? "M" + d.join("L") + "Z" : null; });
+    }
+
+
+    let shufflePts = function() {
+
+        dataPtCt = Math.random()*5 + 5;
+        data = d3.range(dataPtCt).map(i => [Math.random() * width, Math.random() * height]);
+
+        let polys = voronoi.polygons(data);
+
+        var polygons = svg.selectAll("path")
+          .data(polys);
+
+        polygons.enter().append("path");
+        polygons.exit().remove();
+
+        polygons.merge(polygons);
+
+        var circle = svg.selectAll("circle")
+          .data(data);
+
+        circle.exit().transition().duration(duration).attr('r', 10).remove();
+
+        circle.enter().append("circle")
+            .attr('r', 5)
+            .attr('fill', 'red')
+          .merge(circle)
+            .transition()
+            .duration(duration)
+            .attr("cx", d=>d[0])
+            .attr("cy", d=>d[1])
+            .tween('polys', function(d, i) {
+                if (i!== 0) return;
+
+                return function(t) {
+
+                    let polys = voronoi.polygons(data);
+                    var polygons = svg.selectAll("path")
+                      .data(polys)
+                      .call(redrawPolygon);
+
+                }
+            })
+
+
+        setTimeout(shufflePts, duration + delay);
+
+    };
+
+    setTimeout(shufflePts, duration + delay);
+
+
+</script>
+</html>

@@ -1,0 +1,59 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    /*svg{
+        border: 1px solid black;
+    }*/
+</style>
+
+
+<svg width=800 height=800></svg>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + width/2 + ',' + height/2 + ')');
+
+    let data = [
+        {name: 'sun', rad: 40, orbitR: 0, period:1, color:'orange'},
+        {name: 'mercury', rad: 4, orbitR: .3, period:.2, color: 'brown'},
+        {name: 'venus', rad: 8, orbitR: .7, period:.5, color:'grey'},
+        {name: 'earth', rad: 10, orbitR: 1, period:1, color: 'blue'},
+        {name: 'mars', rad: 9, orbitR: 1.5, period:2, color: 'red'},
+    ];
+
+    let solarScale = d3.scaleLinear()
+        .domain([0,2]) // input is astronomical units
+        .range([0, width/2]);
+
+    svgg.selectAll('.body')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', 'body')
+        .attr('cx', d=>solarScale(d.orbitR))
+        .attr('cy', 0)
+        .attr('r', d=>d.rad)
+        .attr('fill', d=>d.color)
+        ;
+
+    let animate = function (t) {
+
+        let tSec = t/10000;
+
+        d3.selectAll('circle')
+            .attr('cx', d=> solarScale(d.orbitR * Math.cos(tSec * 2* Math.PI/d.period)))
+            .attr('cy', d=> solarScale(-d.orbitR * Math.sin(tSec * 2* Math.PI/d.period)))
+    }
+
+    d3.timer(animate);
+
+
+</script>
+</html>

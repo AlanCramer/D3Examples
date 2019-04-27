@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+        <script type="text/javascript" src="line-variable.js"></script>
+    </head>
+
+    <body>
+        <div id="linevar"></div>
+        <script type="text/javascript">
+        (function () {
+        var dat = [{x: 20, y: 20, w: 0},
+                   {x: 20, y: 150, w: 30},
+                   {x: 80, y: 100, w: 20},
+                   {x: 200, y: 100, w: 10},
+                   {x: 300, y: 100, w: 20},
+                   {x: 380, y: 100, w: 0}],
+            svg = d3.select("#linevar")
+                .append("svg:svg")
+                .attr("height", 200)
+                .attr("width", 400);
+        var linevar = d3.svg.line.variable()
+                .interpolate("basis")
+                .w(function(d) { return d.w; })
+                .x(function(d) { return d.x; })
+                .y(function(d) { return d.y; });
+        svg.selectAll("path").data([dat]).enter()
+            .append("svg:path")
+            .attr("d", linevar);
+        })();
+        </script>
+    </body>
+</html>

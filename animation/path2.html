@@ -1,0 +1,93 @@
+
+
+<html>
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    body{
+        margin: 100px;
+    }
+
+    path {
+        fill: orange;
+    }
+</style>
+
+</head>
+
+<body>
+
+<svg id='chart' width=800 height =400></svg>
+
+<script>
+
+    let svg = d3.select('#chart');
+
+    let data = buildPolygonData(3, 100);
+
+    let translator = function(px) {
+        return function(pt) {
+            return {x: pt.x + px, y: pt.y};
+        }
+    }
+
+    let rotator = function(radians) {
+        return function(pt) {
+
+            let xi = Math.cos(radians),
+                yi = Math.sin(radians);
+
+            return {x: xi*pt.x - yi*pt.y, y: yi*pt.x + xi*pt.y};
+        }
+    }
+
+    let new1 = data.map(translator(200));
+    let new2 = new1.map(rotator(Math.PI/2));
+
+    svg.append('circle')
+        .attr('cx', 100)
+        .attr('cy', 100)
+        .attr('r', 100)
+        .attr('fill', 'none')
+        .attr('stroke', 'blue');
+
+    svg.append('path')
+        .attr('d', buildPathString(data))
+        .attr('transform', 'translate(100, 100)');
+
+    let timer = d3.timer(animate);
+
+    let dur = 100;
+    let rot = Math.PI/2;
+    function animate(elapsed) {
+
+        let res = data.map(rotator(rot * (elapsed / dur)));
+        svg.select('path')
+            .attr('d', buildPathString(res));
+    }
+
+    function buildPolygonData (sideCt, polySize) {
+
+        let polyAngle = 2*Math.PI/sideCt;
+        return d3.range(sideCt).map( d => ({x: polySize * Math.cos(d*polyAngle), y: polySize * Math.sin(d*polyAngle)}) );
+    }
+
+    function buildPathString(polyData) {
+        let pathStr = "";
+        polyData.forEach((pt, i) => pathStr = pathStr + ( (i===0 ? 'M ' : 'L ') + pt.x + ' ' + pt.y + ' '));
+        pathStr = pathStr + "Z";
+
+        return pathStr;
+    }
+
+
+</script>
+
+
+</body>
+
+
+</html>

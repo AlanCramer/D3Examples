@@ -1,0 +1,286 @@
+<html>
+
+<head>
+
+<!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
+<script src="../d3/d3.v4.min.js"></script>
+
+<style>
+
+    body {
+        width: 600px;
+    }
+
+    #title{
+        margin-left: 100px;
+        margin-top: 50px;
+    }
+
+    #main-toolbar {
+        display: flex;
+        width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: space-between;
+    }
+
+    #board-buttons {
+        display: inline-block;
+    }
+
+    #test-run-button {
+
+    }
+
+    svg {
+        border: 1px solid black;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cell {
+        fill: #def;
+    }
+
+    .cell text {
+        font-size: 24px;
+        stroke: black;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+    <h2 id='title'>Minesweeper</h2>
+
+    <div id='main-toolbar'>
+        <div id='board-buttons'>
+            <button class = 'toolbar-button'>Small</button>
+            <button class = 'toolbar-button'>Medium</button>
+            <button class = 'toolbar-button'>Large</button>
+            <button class = 'toolbar-button'>Custom</button>
+        </div>
+        <div id='special-buttons'>
+            <button class = 'toolbar-button'>Run Tests</button>
+        </div>
+    </div>
+
+    <svg id='the-board' width=400 height=400></svg>
+
+<script>
+
+    var rowCt = 5,
+        colCt = 5;
+
+    var body = d3.select('body');
+    var theBoard = d3.select('#the-board');
+
+    var width = +theBoard.attr('width'),
+        height = +theBoard.attr('height');
+
+    var x = d3.scaleLinear()
+            .domain([0, colCt])
+            .range([0, width]);
+
+    var y = d3.scaleLinear()
+            .domain([0, rowCt])
+            .range([0, height]);
+
+    var boardData = initBoardData(rowCt, colCt);
+
+    drawBoard(theBoard, boardData);
+    addHandlers(theBoard);
+
+    // assumes all rows have same length and at least one row
+    function drawBoard(theBoard, boardData) {
+
+        var rowCt = boardData.grid.length,
+            colCt = boardData.grid[0].length;
+
+        var rows = theBoard.selectAll('.row')
+            .data(boardData.grid)
+          .enter()
+            .append('g')
+            .attr('class', 'row');
+
+        var cells = rows.selectAll('.cell')
+            .data(function(d) {return d;})
+          .enter()
+            .append('g')
+            .attr('class', 'cell');
+
+        cells.append('rect')
+            .attr('x', function(d, i) { return x(d.x+.1); })
+            .attr('y', function(d, i) { return y(d.y+.1); })
+            .attr('width', 60)
+            .attr('height', 60);
+
+        cells.append('text')
+            .text(function(d) { return d.value; })
+            .attr('x', function(d, i) { return x(d.x + 0.5); })
+            .attr('y', function(d, i) { return y(d.y + 0.5); })
+            .style('visibility', function (d) { return d.showVal ? 'visible' : 'hidden'; })
+            ;
+    }
+
+    function addHandlers(theBoard) {
+        theBoard.selectAll('.cell')
+            .on('click', handleClickCell)
+            .on('mouseover', function() { d3.select(this).style('fill', '#cde')} )
+            .on('mouseout', function() { d3.select(this).style('fill', '#def')} )
+    }
+
+    function handleClickCell(cell) {
+
+        if (cell.bomb) {
+            console.log('boom');
+        }
+
+        cell.showVal = true;
+        drawBoard(theBoard, boardData);
+    }
+
+    function printBoardData(boardData) {
+
+        boardData.grid.forEach(function(row, iRow) {
+            console.log(row.map(function(cell) { return cell.bomb? 'b' : '-'; }).join(' '));
+            // row.forEach(cell, iCell) {
+            //     console.log ()
+            // }
+        })
+
+        boardData.grid.forEach(function(row, iRow) {
+            console.log(row.map(function(cell) { return cell.value === Infinity ? 'I' : cell.value; }).join(' '));
+            // row.forEach(cell, iCell) {
+            //     console.log ()
+            // }
+        })
+
+    }
+
+    function initBoardData(rowCt, colCt) {
+
+        var boardData = {
+
+            rowCt: rowCt,
+            colCt: colCt,
+            grid: d3.range(rowCt).map(function(row, iRow) {
+                return d3.range(colCt).map(function(cell, iCell) {
+                    return {
+                        x: iCell,
+                        y: iRow,
+                        bomb: (Math.random() * 10 < 3),
+                        value: Infinity
+                    };
+                })
+            }),
+
+            isBomb: function(x, y) {
+                return this.grid[y][x].bomb;
+            }
+        }
+
+        countAdjacentBombs(boardData);
+        printBoardData(boardData);
+
+        return boardData;
+    }
+
+    function countAdjacentBombs(boardData) {
+
+        boardData.grid.forEach(function(row, irow) {
+            row.forEach(function (cell, icell) {
+                if (cell.bomb) {
+                    cell.value = 0;
+                    return;
+                }
+
+                var count = 0;
+                var neighbors = [
+                    [-1, -1], [-1, 0], [-1, 1],
+                    [ 0, -1],          [ 0, 1],
+                    [ 1, -1], [ 1, 0], [ 1, 1],
+                ];
+
+                neighbors.map(function(n, i){
+                    var nx = cell.x + n[0],
+                        ny = cell.y + n[1];
+
+                    if (nx >= 0 && nx < boardData.colCt &&
+                        ny >= 0 && ny < boardData.rowCt &&
+                        boardData.isBomb(nx, ny)) {
+                        count++;
+                    }
+                });
+
+                cell.value = count;
+            });
+        });
+
+    }
+
+    // grid is an array of arrays
+    function calculateDistancesL0(boardData) {
+
+        var replaceIfLess = function (cell, cur) {
+            if (cell.bomb) {
+                cur.v = 0;
+            }
+
+            if (cur.v < cell.value) {
+                cell.value = cur.v;
+            }
+
+            cur.v = cell.value;
+
+            cur.v++;
+        }
+        // process rows, left to right, then right to left
+
+        var cur = {v:Infinity};  // temp var as obj, for pass-by-ref
+
+        boardData.grid.forEach(function(row, iRow) {
+
+            cur.v = Infinity;
+            for (var icell = 0; icell < boardData.colCt; ++icell) {
+
+                var cell = row[icell];
+                replaceIfLess(cell, cur);
+            };
+
+            cur.v = Infinity;
+            for (var icell = boardData.colCt-1; icell >= 0; --icell) {
+
+                var cell = row[icell];
+                replaceIfLess(cell, cur);
+            };
+        })
+
+        // process columns,
+
+
+        for (icol = 0; icol < boardData.colCt; ++icol) {
+            cur.v = Infinity;
+            for (irow = 0; irow < boardData.rowCt; ++irow) {
+                cell = boardData.grid[irow][icol];
+                replaceIfLess(cell, cur);
+            }
+            cur.v = Infinity;
+            for (irow = boardData.rowCt-1; irow >= 0; --irow) {
+                cell = boardData.grid[irow][icol];
+                replaceIfLess(cell, cur);
+            }
+        }
+
+    }
+
+
+</script>
+
+</body>
+
+
+</html>

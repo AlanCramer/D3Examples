@@ -1,0 +1,35 @@
+{
+  "name": "e3d Class query-with-mapper",
+  "type": "dynamic",
+  "uuid": "57050e74e4b029be4da0dfc5",
+  "children": [
+    {
+      "name": "e3d A2 Join",
+      "type": "computed",
+      "uuid": "57041c92e4b01e8d935b04d8",
+      "children": [
+        {
+          "name": "e3d A1 Reshape",
+          "uuid": "570419aee4b0d76ca0b71a86",
+          "type": "computed",
+          "children": [
+            {
+              "name": "e3d A1 Reshape",
+              "type": "computed",
+              "uuid": "570419aee4b0d76ca0b71a86",
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "xxx-test-slms-students",
+          "procSpecType": "joinStream"
+        },
+        {
+          "name": "xxx-test-slms-students",
+          "procSpecType": "joinStream"
+        }
+      ]
+    }
+  ]
+}

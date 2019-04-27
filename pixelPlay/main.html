@@ -1,0 +1,135 @@
+<html>
+
+<head>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    .highlight-rect {
+        fill:none;
+        stroke: yellow;
+        stroke-width: 5px;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Yo, dude!</h1>
+
+<div>
+<svg id='the-chart' width=400 height=400></svg>
+<svg id='zoom-view' width=400 height=400></svg>
+</div>
+<script>
+
+    // make some data
+    var xdim = 10;
+    var ydim = 10;
+    var data = d3.range(xdim).map(function(xd) {
+        return d3.range(ydim).map(function(yd) {
+             return  d3.rgb(randomInt(255), randomInt(255), randomInt(255));
+        });
+    });
+
+    // set up
+    var svg = d3.select('#the-chart');
+    var margin = { top:20, left:30, right:30, bottom:40};
+    var width = +svg.attr('width') - margin.left - margin.right;
+    var height = +svg.attr('height') - margin.top - margin.bottom;
+    var svgg = svg.append('g')
+        .attr('transform', 'translate (' + margin.left + ',' + margin.top + ')');
+
+    var zmv = d3.select('#zoom-view');
+    var zmvWidth = +zmv.attr('width') - margin.left - margin.right;
+    var zmvHeight = +zmv.attr('height') - margin.top - margin.bottom;
+    var zmvg = zmv.append('g')
+        .attr('transform', 'translate (' + margin.left + ',' + margin.top + ')');
+
+
+    var rectSz = width/data.length;
+
+    drawPixels(data, svgg, width, height);
+    selectRegion(svgg, zmvg, 0, 0, 4, rectSz);
+
+    svg.append("g")
+        .attr("class", "brush")
+        .call(d3.brush()
+            .extent([[margin.left, margin.top], [width, height]]))
+        ;
+
+    svg.on('click', function() {
+        var pos = d3.mouse(this);
+        var pxpos = pos.map(function(d) { return Math.floor(d/rectSz - 0.5); });
+
+        var sz = 3;
+        selectRegion(svgg, zmvg, pxpos[0], pxpos[1], sz, rectSz);
+    })
+
+    // utils
+    function drawPixels(data, svgg, width, height) {
+        var recWidth = width/data.length;
+        var recHeight = height/data[0].length;
+        var pRows = svgg.selectAll('.pRow')
+            .data(data)
+          .enter().append('g')
+            .attr('transform', function(d,i) { return 'translate(0,' + i*recWidth + ')'; });
+
+        pRows.selectAll('.pCell')
+            .data(function(d, i) { return d; })
+          .enter()
+            .append('rect')
+            .classed('pCell', true)
+            .attr('x', function(d,i) { return recWidth*i; })
+            .attr('y', function(d,i) { return 0;})
+            .attr('width', function(d) { return recWidth; })
+            .attr('height', function(d) { return recWidth; })
+            .style('fill', function(d, i) { return d; })
+            ;
+    }
+
+    function selectRegion(svgg, zmvg, x, y, sz, rectSz) {
+        var subdata = sliceData(x, y, sz);
+        zmvg.selectAll('.pCell').remove();
+        drawPixels(subdata, zmvg, zmvWidth, zmvHeight);
+        drawHighlightRect(svgg, x, y, sz*rectSz);
+    }
+
+    function sliceData(x, y, sz) {
+        var subdata = data.slice(y, y+sz);
+        subdata = subdata.map(function(sd){
+            return sd.slice(x, x+sz);
+        });
+        return subdata;
+    }
+
+    function drawHighlightRect(svgg, x, y, sz) {
+
+        svgg.select('.highlight-rect').remove();
+
+        svgg.append('rect')
+            .classed('highlight-rect', true)
+            .attr('x', x*rectSz)
+            .attr('y', y*rectSz)
+            .attr('width', sz)
+            .attr('height', sz);
+    }
+
+    function randomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
+
+</script>
+
+</body>
+
+
+</html>

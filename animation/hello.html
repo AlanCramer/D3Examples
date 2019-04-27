@@ -1,0 +1,106 @@
+<html>
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    #sun {
+        fill: yellow;
+    }
+
+    .line {
+        stroke-width: 2;
+        stroke: black;
+        stroke-dasharray: .5em;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+    <svg id='chart' width=400 height=400></svg>
+
+<script>
+
+    let planets = d3.range(2).map(i => ({ rad: 10, orbitR: .2+i/10, period: (i+1)}));
+
+    planets.push({ rad: 20, orbitR: 0, period: 1 });
+
+    let lines = [[0, 1], [0, 2]];
+
+    let svg = d3.select('#chart');
+    let margin = {top: 0, right: 0, bottom: 0, left: 0},
+        width = +svg.attr('width') - margin.left - margin.right,
+        height = +svg.attr('height') - margin.top - margin.bottom;
+
+    let svgg = svg.append('g')
+        .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+
+    let categ = d3.schemeCategory10;
+    let colors = d3.scaleOrdinal(categ);
+
+    let r = d3.scaleLinear()
+        .domain([0, 1])
+        .range([0, width/2]);
+
+    svgg.selectAll('.planet')
+        .data(planets)
+      .enter()
+        .append('circle')
+        .classed('planet', true)
+        .attr('class', (d,i) => 'planet' + ' p' + i)
+        .attr('r', d => d.rad)
+        .attr('fill', (d,i) => colors(i))
+        .attr( 'cx', d => r(d.orbitR) * Math.cos(d.period ) )
+        .attr( 'cy', d => r(d.orbitR) * Math.sin(d.period) );
+
+    svgg.selectAll('.line')
+        .data(lines)
+      .enter()
+        .append('line')
+        .classed('line', true)
+        .attr('x1', d => d3.select('.p'+d[0]).attr('cx'))
+        .attr('y1', d => d3.select('.p'+d[0]).attr('cy'))
+        .attr('x2', d => d3.select('.p'+d[1]).attr('cx'))
+        .attr('y2', d => d3.select('.p'+d[1]).attr('cy'));
+
+
+    //
+    d3.timer(animate);
+
+    function animate(elapsed) {
+
+        let sec = elapsed/1000;
+
+        svgg.selectAll( '.planet' )
+            .attr( 'cx', d => r(d.orbitR) * Math.cos(2*Math.PI * sec / d.period ) )
+            .attr( 'cy', d => r(d.orbitR) * Math.sin(2*Math.PI * sec / d.period ) );
+
+        svgg.selectAll('.line')
+            .attr('x1', d => d3.select('.p'+d[0]).attr('cx'))
+            .attr('y1', d => d3.select('.p'+d[0]).attr('cy'))
+            .attr('x2', d => d3.select('.p'+d[1]).attr('cx'))
+            .attr('y2', d => d3.select('.p'+d[1]).attr('cy'));
+
+        svgg.append('circle')
+            .attr( 'cx', d => r(d.orbitR) * Math.cos(2*Math.PI * sec / d.period ) )
+            .attr( 'cy', d => r(d.orbitR) * Math.sin(2*Math.PI * sec / d.period ) );
+
+
+    }
+
+
+</script>
+
+
+</body>
+
+
+</html>

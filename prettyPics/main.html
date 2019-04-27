@@ -1,0 +1,82 @@
+<html>
+
+<head>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    circle {
+        stroke-width: 1px;
+        fill: none;
+        stroke: blue;
+        //opacity: .2;
+        //fill: aquamarine;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Yo, dude!</h1>
+<svg id='the-chart' width=800 height=400></svg>
+
+<script>
+
+    var svg = d3.select('#the-chart');
+    var margin = { top:20, left:30, right:30, bottom:40};
+    var width = +svg.attr('width') - margin.left - margin.right;
+    var height = +svg.attr('height') - margin.top - margin.bottom;
+    var svgg = svg.append('g')
+        .attr('transform', 'translate (' + margin.left + ',' + margin.top + ')');
+
+    var ct = 1;
+    var time = 200;
+    update(ct);
+
+    var bub = function() {
+        ct++;
+        update(ct)
+    };
+
+    var intvId = setInterval(bub, time);
+
+    function update(ct) {
+        var data = d3.range(ct).map(function(i) { return i*360/ct; });
+
+        var circ = svgg.selectAll('circle')
+            .data(data);
+
+        circ.enter()
+            .append('circle')
+            .attr('cx', 60)
+            .attr('cy', 0)
+            .attr('r', 40)
+            .attr('transform', function(d) { return 'translate('+ width/2 + ',' + height/2 + ') '+ 'rotate(' + 0 + ')'; })
+          .merge(circ)
+            .transition().duration(time)
+            .attr('transform', function(d) { return 'translate('+ width/2 + ',' + height/2 + ') '+ 'rotate(' + d + ')'; })
+            ;
+
+    }
+
+    var running = true;
+    d3.select('body')
+        .on('click', function() {
+
+            intvId = running ?  clearInterval(intvId) : setInterval(bub, time);
+            running = !running;
+        })
+
+</script>
+
+</body>
+
+
+</html>

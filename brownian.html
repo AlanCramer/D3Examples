@@ -1,0 +1,216 @@
+<html>
+
+<head>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    .dot {
+        fill: blue;
+    }
+
+    .axis text {
+      font: 10px sans-serif;
+    }
+
+    .axis line,
+    .axis circle {
+      fill: none;
+      stroke: #777;
+      stroke-dasharray: 1,4;
+    }
+
+    .axis :last-of-type circle {
+      stroke: #333;
+      stroke-dasharray: none;
+    }
+
+</style>
+</head>
+
+
+<body>
+
+<script>
+
+    var width = 700,
+        height = 600,
+        radius = Math.min(width, height) / 2 - 30;
+
+    var dotCt = 1,
+        step = 1; //ms
+
+    var r = d3.scaleLinear()
+        .domain([0, Math.min(width, height)])
+        .range([0, radius]);
+
+    var radLine = d3.radialLine()
+        .radius(function(d) { return r(d[1]); })
+        .angle(function(d) { return -d[0] + Math.PI / 2; });
+
+    var line = d3.line()
+        .x(function(d) { return d[0]; })
+        .y(function(d) { return d[1]; });
+
+    var body = d3.select('body');
+
+    body.append('h1')
+        .text('Brownian 101');
+
+    var svg_g = body.append("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+        .call(d3.zoom().scaleExtent([0.1, 2]).on("zoom", zoom))
+        ;
+
+    svg_g.append('rect')
+        .classed('overlay', true)
+        .attr("width", width)
+        .attr("height", height);
+
+    var svg_gg = svg_g.append('g');
+
+    drawAxes(svg_gg, r, line);
+
+    var dotList = d3.range(dotCt).map(function(d) { return [[0, 0]];});
+
+    var enterDots = svg_gg.selectAll('.dot')
+        .data(dotList)
+      .enter()
+        .append('g')
+        .classed('dot', true);
+
+    enterDots
+        .append('circle')
+        .classed('dot-circle', true)
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('r', 8);
+
+    enterDots.append("path")
+        .classed('dot-trail', true)
+        //.datum([1,2])
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        // .attr("stroke-linejoin", "round")
+        // .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        //.attr("d", line);
+        ;
+
+    function zoom() {
+        svg_g.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + d3.event.transform.k + ')');
+    }
+
+    function drawAxes(svg, r, line) {
+
+        var gr = svg.append("g")
+            .attr("class", "r axis")
+          .selectAll("g")
+            .data(r.ticks(10).slice(1))
+          .enter().append("g");
+
+        gr.append("circle")
+          .attr("r", r);
+
+        gr.append("text")
+          .attr("y", function(d) { return -r(d) - 4; })
+          .attr("transform", "rotate(15)")
+          .style("text-anchor", "middle")
+          .text(function(d) { return d; });
+
+        var ga = svg.append("g")
+          .attr("class", "a axis")
+        .selectAll("g")
+          .data(d3.range(0, 360, 30))
+        .enter().append("g")
+          .attr("transform", function(d) { return "rotate(" + -d + ")"; });
+
+        ga.append("line")
+          .attr("x2", radius);
+
+        ga.append("text")
+          .attr("x", radius + 6)
+          .attr("dy", ".35em")
+          .style("text-anchor", function(d) { return d < 270 && d > 90 ? "end" : null; })
+          .attr("transform", function(d) { return d < 270 && d > 90 ? "rotate(180 " + (radius + 6) + ",0)" : null; })
+          .text(function(d) { return d;}); //  + '&#8451;'; });
+    }
+
+    function calcNewVal(curx, delta, bounds) {
+
+        var rand = Math.random();
+
+        var newx = (rand > 0.5) ? curx + delta : curx - delta;
+        // if (newx < bounds[0]) {
+        //     newx = bounds[0] + delta;
+        // }
+        // if (newx > bounds[1]){
+        //     newx = bounds[1] - delta;
+        // }
+
+        return newx;
+    }
+
+    function updateDot(dotg) {
+
+        var dot = dotg.select('.dot-circle');
+        var curx = +dot.attr('cx');
+        var cury = +dot.attr('cy');
+        var delta = 10;
+
+        var heads = Math.random() > 0.5;
+
+        var newx = heads ? calcNewVal(curx, delta, [0, width]) : curx;
+        var newy = heads ? cury : calcNewVal(cury, delta, [0, height]);
+
+        dot
+            .transition().duration(step)
+            .attr('cx', newx)
+            .attr('cy', newy);
+
+        var trail = dotg.select('.dot-trail');
+        var trailPath = trail.attr('d');
+        var trailDat = trail.datum();
+        trailDat.push([newx, newy]);
+
+        var str = line(trailDat);
+        console.log(str);
+        trail.attr('d', str);
+
+        //trail.datum(trailData).attr('d', line);
+
+    }
+
+    function update() {
+
+        var dot = d3.selectAll('.dot')
+            .each(function(d, i) {
+                var dotg = d3.select(this);
+
+                updateDot(dotg);
+            });
+    }
+
+    window.setInterval(update, step+20);
+
+</script>
+
+
+</body>
+
+
+
+
+</html>

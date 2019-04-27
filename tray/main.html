@@ -1,0 +1,55 @@
+<html>
+
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    path {
+        fill: none;
+        stroke: steelblue;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        stroke-width: 1.5;
+    }
+
+</style>
+</head>
+
+<body>
+<svg width = 900 height=600></svg>
+
+<script>
+    var body = d3.select('body');
+    body.append('h1')
+        .text('Hello all.');
+
+    var width = 10;
+    var height = 30;
+
+    var points = [[10, 10], [200, 200], [200, 10], [10,200]];
+
+    var svg = d3.select('svg');
+
+    var line = d3.line()
+        .x(function(d) { return d[0];})
+        .y(function(d) { return d[1];});
+
+    svg.append('path')
+        .datum(points)
+        .attr('d', line);
+
+
+
+</script>
+
+
+
+</body>
+
+
+</html>

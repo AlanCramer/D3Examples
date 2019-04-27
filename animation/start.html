@@ -1,0 +1,60 @@
+<html>
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    svg {
+        border: 1px solid black;
+    }
+
+    circle {
+        fill: blue;
+    }
+</style>
+
+</head>
+
+<body>
+
+<svg id='chart' width=800 height=400></svg>
+
+<script>
+
+    let svg = d3.select('#chart');
+    let margin = { top: 30, left:30, right:30, bottom:40},
+        width = +svg.attr('width') - margin.left - margin.right,
+        height = +svg.attr('height') - margin.top - margin.bottom;
+    let svgg = svg.append('g')
+        .attr('transform', 'translate (' + margin.left + ', ' + margin.top + ')');
+
+    let dtPtCt = 10;
+    let data = d3.range(dtPtCt).map( i => ({x:i, y:0}) );
+
+    let xscale = d3.scaleLinear()
+        .domain([d3.min(data, d => d.x), d3.max(data, d => d.x)])
+        .range([0, width]);
+
+    let yscale = d3.scaleLinear()
+        .domain([0, 100])
+        .range([height, 0]);
+
+    svgg.selectAll('circle')
+        .data(data)
+      .enter()
+        .append('circle')
+        .attr('cx', d => xscale(d.x) )
+        .attr('cy', d => yscale(d.y))
+        .attr('r', 15)
+        .transition()
+        .delay(1000)
+        .duration(2000)
+        .attr('cy', d => yscale(d.x * d.x))
+        ;
+
+</script>
+
+</body>
+
+
+</html>

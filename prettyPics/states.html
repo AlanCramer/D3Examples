@@ -1,0 +1,147 @@
+<html>
+
+<head>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    .data-pt {
+        r: 5;
+    }
+
+    .axis.radial {
+        fill: none;
+        stroke-width: 1px;
+        stroke: black;
+    }
+
+    line.axis.angular{
+        stroke-width: 1px;
+        stroke: #999999;
+    }
+
+    text.axis {
+      font: 10px sans-serif;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Yo, dude!</h1>
+<svg id='the-chart' width=800 height=400></svg>
+
+<script>
+
+
+    var psv = d3.dsvFormat(":");
+    d3.request("statesJoinUnion.txt")
+      .mimeType("text/plain")
+      .response(function(xhr) { return psv.parse(xhr.responseText) })
+      .get(function(data) {
+        console.log("pipe-delimited data:")
+
+        data.map(function(d) {
+            d['state'] = d['state'].trim();
+            d['entered-union'] = readDate(d['entered-union']);
+        });
+        console.log(data);
+
+        displayStates(data);
+      });
+
+    function readDate(dateStr) {
+        var match1 = d3.timeParse("%b. %e, %Y");
+        var match2 = d3.timeParse("%B %e, %Y");
+
+        var m1 = match1(dateStr);
+        var m2 = match2(dateStr);
+
+        return new Date(m1 ? m1 : m2);
+    }
+
+    // expects objects with 'state' and 'entered-union' fields
+    function displayStates(states) {
+
+        var svg = d3.select('#the-chart');
+        var margin = { top:80, left:80, right:80, bottom:80};
+        var width = +svg.attr('width') - margin.left - margin.right;
+        var height = +svg.attr('height') - margin.top - margin.bottom;
+        var svgg = svg.append('g')
+            .attr('transform', 'translate (' + (margin.left + width/2) + ',' + (margin.top + height/2) + ')');
+
+        var r = d3.scaleLinear()
+            .domain([new Date(1700,1), d3.max(states, function(d) { return d['entered-union']; }) ] )
+            .range([0, d3.min([width/2, height/2])]);
+
+        var theta = d3.scalePoint()
+            .domain(states.map(function(d) { return d.state; }))
+            .range([0, -2*Math.PI * (states.length / (states.length+1)) ]);
+
+        var pts = svgg.selectAll('circle')
+            .data(states)
+          .enter()
+            .append('circle')
+            .attr('class', 'data-pt')
+            .attr('cx', function(d) { return r(d['entered-union']) * Math.cos(theta(d['state']))})
+            .attr('cy', function(d) { return r(d['entered-union']) * Math.sin(theta(d['state']))})
+            ;
+
+        drawAxis(svgg, r, theta, states);
+    }
+
+    drawAxis = function(svgg, r, theta, states) {
+
+        var maxr = r(r.range()[1]);
+        var maxr2 = r(new Date(2017, 1));
+        var rad2deg = 180 / Math.PI;
+
+        svgg.append('circle')
+            .attr('class', 'axis radial')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', maxr);
+
+        var angEnt = svgg.selectAll('.axis.angular')
+            .data(states)
+          .enter();
+
+        var ga = angEnt.append('g')
+            .attr('transform', function(d) {
+                return 'rotate (' + rad2deg * theta(d.state) +')' ;} );
+
+        ga
+            .append('line')
+            .attr('class', 'axis angular')
+            .attr('x2', maxr + 6)
+        ;
+
+        ga
+            .append('text')
+            .attr('class', 'axis angular')
+            .text(function(d) { return d.state; })
+            .attr('x', maxr2)
+            .attr('dy', '.35em')
+            .style("text-anchor", function(d) {
+                var dg = rad2deg * theta(d.state);
+                return dg > -270 && dg < -90 ? "end" : null; })
+            .attr("transform", function(d) {
+                var dg = rad2deg * theta(d.state);
+                return dg > -270 && dg < -90 ? "rotate(180 " + maxr2 + ",0)" : null; })
+        ;
+    }
+
+
+</script>
+
+</body>
+
+
+</html>

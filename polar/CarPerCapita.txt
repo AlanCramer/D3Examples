@@ -1,0 +1,50 @@
+San Marino	1,263
+Monaco	899
+United States	797
+Liechtenstein	750
+Iceland	745
+Luxembourg	739
+Australia	736
+New Zealand	712
+Malta	693
+Italy	679
+Guam	677
+Canada	662
+Greece	586
+Finland	612
+Spain	593
+Japan	591
+Norway	584
+Austria	578
+France	578
+Germany	572
+Slovenia	567
+Switzerland	566
+Lithuania	560
+Belgium	559
+Portugal	548
+Slovakia	546
+Poland	537
+Bahrain	537
+Qatar	532
+Cyprus	532
+Netherlands	528
+Kuwait	527
+Sweden	520
+United Kingdom	519
+Ireland	513
+Brunei	510
+Iraq	496
+Czech Republic	485
+Denmark	480
+Estonia	476
+Barbados	469
+South Korea	459
+Lebanon	434
+Bulgaria	393
+Israel	383
+Croatia	380
+Belarus	362
+Malaysia	361
+Trinidad and Tobago	353
+Hungary	345

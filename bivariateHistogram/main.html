@@ -53,60 +53,23 @@ input {
 
 <script>
 
-    function updateXDevSlider(val) {
-      d3.select('#xDev-value')
-        .text(val);
-    };
-    function updateYDevSlider(val) {
-      d3.select('#yDev-value')
-        .text(val);
-    };
-    function updateData(newData) {
-      var dots = svg.selectAll(".dot")
-          .data(newData);
-
-      dots
-        .transition().duration(transDur)
-          .attr("cx", function(d) {return x(d.x); })
-          .attr("cy", function(d) {return y(d.y); })
-
-      updateTopHistogram(width, height, displayRange, data);
-    };
-    function updateXData(deviation) {
-
-      var newGauss = d3.random.normal(0, deviation);
-
-      data.forEach(function(d) {
-        d.x = newGauss();
-      });
-
-      updateData(data);
-    };
-    function updateYData(deviation) {
-
-      var newGauss = d3.random.normal(0, deviation);
-
-      data.forEach(function(d) {
-        d.y = newGauss();
-      });
-
-      updateData(data);
-    };
+(function() { // iffy to not polute global namespace
 
     d3.select("#xDev").on("input", function() {
-      updateXDevSlider(+this.value);
+        updateXDevSlider(+this.value);
     });
     d3.select("#xDev").on("change", function() {
-      updateXDevSlider(+this.value);
-      updateXData(+this.value);
+        updateXDevSlider(+this.value);
+        updateXData(+this.value);
     });
     d3.select("#yDev").on("input", function() {
-      updateYDevSlider(+this.value);
+        updateYDevSlider(+this.value);
     });
     d3.select("#yDev").on("change", function() {
-      updateYDevSlider(+this.value);
-      updateYData(+this.value);
+        updateYDevSlider(+this.value);
+        updateYData(+this.value);
     });
+
     var xInit = 1;
     var yInit = 0.1;
     var numPoints = 1000;
@@ -124,10 +87,10 @@ input {
     console.log( gaussianX() ) ;
 
     data = data.map(function(d) {
-      return {
-        x: gaussianX(),
-        y: gaussianY()
-      };
+        return {
+            x: gaussianX(),
+            y: gaussianY()
+        };
     });
 
     console.log(new Date().getTime() - start);
@@ -191,71 +154,129 @@ input {
           return y(d.y); })
         .style("fill", 'blue');
 
-   function updateTopHistogram(width, height, displayRange, data) {
+    updateTopHistogram(width, height, displayRange, data);
 
-     // first calculate the data
-    var binCount = 10;
-    var binWidth = (displayRange[1] - displayRange[0]) / binCount;
-    var offset = -displayRange[0] / 2;
-    var bins = d3.range(binCount).fill(0);
-    data.forEach(function (d) {
-        var tmp = Math.floor(d.x / binWidth) + offset;
-        (tmp >= binCount || tmp < 0) ?
-          console.log('Data point ' + d + ' out of bounds') :
-          bins[tmp]++;
-    });
+    function updateXDevSlider(val) {
+        d3.select('#xDev-value')
+            .text(val);
+    };
+    function updateYDevSlider(val) {
+        d3.select('#yDev-value')
+            .text(val);
+    };
+    function updateData(newData) {
+        var dots = svg.selectAll(".dot")
+            .data(newData);
 
-    // now draw it
-    var histWidth = width;
-    var histMargin = {top: 20, right: margin.right, bottom: 0, left: margin.left};
+        dots.transition().duration(transDur)
+            .attr("cx", function(d) {return x(d.x); })
+            .attr("cy", function(d) {return y(d.y); })
 
-    var histHeight = height/4;
-    var histSvg = d3.select('#top-histogram')
-         .attr("width", histWidth + histMargin.left + histMargin.right)
-         .attr("height", histHeight + histMargin.top + histMargin.bottom);
+        updateTopHistogram(width, height, displayRange, data);
+    };
+    function updateXData(deviation) {
 
-    var hist = histSvg.select('#hist-container')
-         .attr("transform", "translate(" + histMargin.left + "," + histMargin.top + ")");
+        var newGauss = d3.random.normal(0, deviation);
 
-    var x = d3.scale.ordinal()
-        .domain(d3.range(binCount))
-        .rangeRoundBands([0, histWidth], .1);
+        data.forEach(function(d) {
+            d.x = newGauss();
+        });
 
-    var y = d3.scale.linear()
-        .domain(d3.extent(bins))
-        .range([histHeight, 0]);
+        updateData(data);
+    };
+    function updateYData(deviation) {
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left")
-        .ticks(5)
-        ;
+        var newGauss = d3.random.normal(0, deviation);
 
-    var d3YAxis = d3.select('#top-histogram').select('.y.axis');
+        data.forEach(function(d) {
+            d.y = newGauss();
+        });
 
-    d3YAxis
-      .transition().duration(transDur) // hist axis cool animation
-      .call(yAxis);
+        updateData(data);
+    };
+    function updateNPts(npts) {
 
-    //d3.selectAll('.bar').remove();
+        data = d3.range(0, npts);
 
-    var barSel = hist.selectAll(".bar")
-        .data(bins);
+        var xdev = +d3.select('xDev-value').text();
+        var ydev = +d3.select('yDev-value').text();
 
-    barSel.exit().remove();
+        var newXGauss = d3.random.normal(0, xdev);
+        var newYGauss = d3.random.normal(0, ydev);
 
-    barSel.enter()
-      .append("rect")
-      .attr("class", "bar");
+        data.forEach(function(d) {
+            d.x = newXGauss();
+            d.y = newYGauss();
+        });
 
-    barSel.transition().duration(transDur)
-        .attr("x", function(d,i) { return x(i); })
-        .attr("width", x.rangeBand())
-        .attr("y", function(d) { return y(d); })
-        .attr("height", function(d) { return histHeight - y(d); });
+        updateData(data);
+    };
+
+    function updateTopHistogram(width, height, displayRange, data) {
+
+         // first calculate the data
+        var binCount = 10;
+        var binWidth = (displayRange[1] - displayRange[0]) / binCount;
+        var offset = -displayRange[0] / 2;
+        var bins = d3.range(binCount).fill(0);
+        data.forEach(function (d) {
+            var tmp = Math.floor(d.x / binWidth) + offset;
+            (tmp >= binCount || tmp < 0) ?
+              console.log('Data point ' + d + ' out of bounds') :
+              bins[tmp]++;
+        });
+
+        // now draw it
+        var histWidth = width;
+        var histMargin = {top: 20, right: margin.right, bottom: 0, left: margin.left};
+
+        var histHeight = height/4;
+        var histSvg = d3.select('#top-histogram')
+             .attr("width", histWidth + histMargin.left + histMargin.right)
+             .attr("height", histHeight + histMargin.top + histMargin.bottom);
+
+        var hist = histSvg.select('#hist-container')
+             .attr("transform", "translate(" + histMargin.left + "," + histMargin.top + ")");
+
+        var x = d3.scale.ordinal()
+            .domain(d3.range(binCount))
+            .rangeRoundBands([0, histWidth], .1);
+
+        var y = d3.scale.linear()
+            .domain(d3.extent(bins))
+            .range([histHeight, 0]);
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(5)
+            ;
+
+        var d3YAxis = d3.select('#top-histogram').select('.y.axis');
+
+        d3YAxis
+          .transition().duration(transDur) // hist axis cool animation
+          .call(yAxis);
+
+        //d3.selectAll('.bar').remove();
+
+        var barSel = hist.selectAll(".bar")
+            .data(bins);
+
+        barSel.exit().remove();
+
+        barSel.enter()
+          .append("rect")
+          .attr("class", "bar");
+
+        barSel.transition().duration(transDur)
+            .attr("x", function(d,i) { return x(i); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return histHeight - y(d); });
    }
 
-   updateTopHistogram(width, height, displayRange, data);
+})(); // close and call the iffy
 
 </script>
 </body>

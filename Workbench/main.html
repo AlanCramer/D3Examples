@@ -1,0 +1,367 @@
+<html>
+
+<head>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    svg {
+        border: 1px solid black;
+    }
+
+    .indent {
+        margin-left: 50px;
+    }
+
+    .node text {
+      font: 10px sans-serif;
+    }
+
+    .node--internal circle {
+      fill: #555;
+    }
+
+    .node--internal text {
+      text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+    }
+
+    .link {
+      fill: none;
+      stroke: #555;
+      stroke-opacity: 0.4;
+      stroke-width: 2.5px;
+    }
+
+    .link.filterMapper {
+        stroke: blue;
+    }
+    .link.searchJSON {
+        stroke: red;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>About Stream-Spec</h1>
+
+<h2>Opening up the stream-spec file that Rubesh gave us, we see that it is an
+    array of 'specs'.
+<h2>
+
+<h3 id='stats'>Some Stats:</h3>
+<ul id='stats-list'></ul>
+
+<h3>
+    <p>The report streams we use (for the reports we render) are dynamic streams.
+    Dynamic streams have a "searchJSON" field. These fields are queries
+    that leverage other streams.
+</h3>
+
+<div class='indent'>
+    <h4>First, let's check whether dynamic streams have searchJSON. </h4>
+    <ul id='search-json'></ul>
+    <h4>Okay, so, looks like all dynamic streams have searchJSON, and no computed ones do.</h4>
+    <h4>Now let's see if all computed streams have a intellistreamJobSpec and if any dynamic ones do. </h4>
+    <ul id='job-spec'></ul>
+</div>
+
+<h3>
+    <p>Now, let's look at our dynamic streams and find what streams they reference in their searchJSON.
+    We have 2 dependency types, searchJSON (shown with red link) and filterMapper (shown in blue).
+
+    <p>Actually, there is a third dependency type. Some specs have a "intellistreamJobSpec", which
+        seem to have a "pipelineSpec". The pipeline spec has "processingSpecs" which seem to have a
+        primary stream and then join streams.
+
+    <p>
+    <svg id='stream-tree-view' width=1200 height=600></svg>
+</h3>
+
+<script>
+
+    d3.json('stream-spec.json', function(data) {
+        console.log(data.length);
+
+        var allspecs = data;
+        var activeSpecs = data.filter(function(d) { return d.active; });
+
+        activeSpecs.forEach(function(s) {
+            if (s.searchJSON) {
+                s.searchJSONObj = JSON.parse(s.searchJSON);
+            }
+        });
+
+        var reportStreams = [];
+
+        reportStreams.push({name: 'E3D', uuid: '57050e74e4b029be4da0dfc5'});
+        reportStreams.push({name: 'IRS', uuid: '56e57229e4b0d23d758d60cb'});
+        reportStreams.push({name: 'IRC', uuid: '56e57292e4b0d23d758d60e6'});
+        reportStreams.push({name: 'OBS', uuid: '56fac936e4b0d76ca0b71942'});
+        reportStreams.push({name: 'WAC', uuid: '56e4d7b9e4b0d23d758d1d73'});
+        // reportStreams.push({name: 'Check Site Last Compute', uuid: '5790f7e73347c35db61034e1'});
+
+        var reportHiers = reportStreams.map(function (r) { return buildHierarchy(r.uuid); });
+
+        var svg = d3.select("#stream-tree-view"),
+            margin = {top: 20, left:200, right:200, bottom:30},
+            width = +svg.attr("width") - margin.left - margin.right,
+            height = +svg.attr("height") - margin.top - margin.bottom,
+            g = svg.append("g").attr("transform", "translate(" + margin.left + ', ' + margin.top + ')');
+
+        var tree = d3.tree()
+            .size([height/reportStreams.length, width]);
+
+        var gg = g.selectAll('.specTree')
+            .data(reportHiers)
+          .enter()
+            .append('g')
+            .classed('specTree', true)
+            .attr('transform', function(d, i) { return 'translate(0,' + i * height / reportHiers.length + ')'; })
+            .each(function(d) {
+                return buildTree(d, d3.select(this)); })
+            ;
+
+        //reportHiers.forEach(buildTree);
+        //gg.each(buildTree);
+        //buildTree(reportHiers[0]);
+
+        populateStats();
+        var numActiveDynWithSearchJSON = activeSpecs.reduce (function(p, c) {
+            if (c.type === 'dynamic' && c.searchJSON) {
+                p++
+            }
+            return p;
+        }, 0);
+
+        var numActiveCompStreamsWithSearchJSON = activeSpecs.reduce (function(p, c) {
+            if (c.type === 'computed' && c.searchJSON) {
+                p++
+            }
+            return p;
+        }, 0);
+
+        var numActiveCompStreamsWithJobSpec = activeSpecs.reduce (function(p, c) {
+            if (c.type === 'computed' && c.intellistreamJobSpec) {
+                p++
+            }
+            return p;
+        }, 0);
+        var numActiveDynWithJobSpec = activeSpecs.reduce (function(p, c) {
+            if (c.type === 'dynamic' && c.intellistreamJobSpec) {
+                p++
+            }
+            return p;
+        }, 0);
+
+
+        d3.select('#search-json')
+            .append('li')
+            .text('Of the active dynamic specs, ' + numActiveDynWithSearchJSON + ' have a searchJSON field.' );
+
+        d3.select('#search-json')
+            .append('li')
+            .text('Of the active computed specs, ' + numActiveCompStreamsWithSearchJSON + ' have a searchJSON field.' );
+
+        d3.select('#job-spec')
+            .append('li')
+            .text('Of the active dynamic specs, ' + numActiveDynWithJobSpec + ' have a JobSpec field.' );
+
+        d3.select('#job-spec')
+            .append('li')
+            .text('Of the active computed specs, ' + numActiveCompStreamsWithJobSpec + ' have a JobSpec field.' );
+
+        function findSpec(uuid) {
+            var spec = activeSpecs.find(function(d) {
+                return uuid === d.uuid;
+            });
+            return spec;
+        }
+
+        function buildHierarchy(uuid) {
+
+            var spec = findSpec(uuid);
+
+            if (!spec) {
+                return;
+            }
+
+            var node = {
+                name: spec.name,
+                uuid: spec.uuid,
+                children: []
+            };
+
+            if (spec.searchJSONObj) {
+                spec.searchJSONObj.indices.forEach(function(sji) {
+
+                    var childHier = [];
+                    var hier = buildHierarchy(sji.uuid);
+
+                    if (hier) {
+                        childHier.push(hier);
+                    }
+
+                    node.children.push({
+                        name: sji.name,
+                        uuid: sji.uuid,
+                        type: 'searchJSON',
+                        children: childHier
+                    });
+                })
+            }
+
+            if (spec.filterMapper) {
+
+                var childHier = [];
+                var hier = buildHierarchy(spec.filterMapper.lookupIntellistreamId);
+
+                if (hier) {
+                    childHier.push(hier);
+                }
+
+                var spec = findSpec(spec.filterMapper.lookupIntellistreamId);
+
+                node.children.push({
+                    name: spec.name,
+                    uuid: spec.uuid,
+                    type: 'filterMapper',
+                    children: childHier
+                });
+            }
+
+            // if (spec.intellistreamJobSpec) {
+            //     var childHier = [];
+            //
+            //     var spec0 = spec.intellistreamJobSpec.pipelineSpec.processingSpecs[0].primaryStream;
+            //     var primaryStream = spec0 ? spec0.streamName : "";
+            //     var primaryStreamSpec = primaryStream.split('-').slice(-1).pop();
+            //
+            //     var spec = findSpec(primaryStreamSpec);
+            //
+            //     if (spec) {
+            //         var hier = buildHierarchy(primaryStreamSpec);
+            //
+            //         if (hier) {
+            //             childHier.push(hier);
+            //         }
+            //     }
+            //
+            //     node.children.push({
+            //         name: primaryStream,
+            //         uuid: "",
+            //         type: 'pipline-primary',
+            //         children: childHier
+            //     });
+            //
+            // }
+
+            return node;
+        }
+
+        function populateStats() {
+            var statsData = [
+                {
+                    name: 'Number of elements : ',
+                    func : function() { return data.length; }
+                },
+                {
+                    name: 'Number with "active" set to true : ',
+                    func : function() { return countElemsWithField('active'); }
+                },
+                {
+                    name: 'Number with "intellistreamJobSpec" : ',
+                    func : function() { return countElemsWithField('intellistreamJobSpec'); }
+                },
+                {
+                    name: 'Number of active specs with "intellistreamJobSpec" : ',
+                    func : function() { return countActiveSpecsWithField('intellistreamJobSpec'); }
+                },
+                {
+                    name: 'Types (number) of active streams : ',
+                    func: function () {
+                        var cts = data.reduce(function(p,c) {
+                            c.active ? (!p[c.type] ?
+                                p[c.type] = 1 :
+                                p[c.type]++) : null;
+                            return p;
+                        }, {});
+                        return Object.keys(cts).map(function(key) { return key + ' (' + cts[key] + ')'; });
+                    }
+                }
+            ];
+
+            function countElemsWithField(field) {
+                return data.reduce(function(p,c) {
+                    c[field] ? p++ : null;
+                    return p;
+                }, 0);
+            };
+
+            function countActiveSpecsWithField(field) {
+                return activeSpecs.reduce(function(p,c) {
+                    c[field] ? p++ : null;
+                    return p;
+                }, 0);
+            };
+
+            function onlyUnique(value, index, self) {
+                return self.indexOf(value) === index;
+            };
+
+            var statsList = d3.select('#stats-list');
+            var stats = statsList.selectAll('.stat')
+                .data(statsData)
+              .enter()
+                .append('li')
+                .attr('class', 'stat')
+                .text(function(d) { return d.name + d.func();} )
+            ;
+        }
+
+
+        function buildTree (hierData, g) {
+
+            var hier = d3.hierarchy(hierData);
+            var linkData = tree(hier).links();
+
+            var link = g.selectAll(".link")
+                .data(linkData)
+              .enter().append("path")
+                .attr("class", "link")
+                .classed('searchJSON', function(d) {
+                    return d.target.data.type === 'searchJSON'; })
+                .classed('filterMapper', function(d) {
+                    return d.target.data.type === 'filterMapper'; })
+                .attr("d", d3.linkHorizontal()
+                  .x(function(d) { return d.y; })
+                  .y(function(d) { return d.x; }));
+
+            var node = g.selectAll(".node")
+                .data(hier.descendants())
+              .enter().append("g")
+                .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
+                .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+
+            node.append("circle")
+                .attr("r", 2.5);
+
+            node.append("text")
+                .attr("dy", 3)
+                .attr("x", function(d) { return d.children ? -8 : 8; })
+                .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
+                .text(function(d) {
+                    return d.data.name;
+                });
+        }
+
+    });
+
+</script>
+
+</body>
+
+
+</html>

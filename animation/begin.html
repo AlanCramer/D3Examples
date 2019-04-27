@@ -1,0 +1,59 @@
+<html>
+
+<svg width=500 height=500></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    svg {
+        border: 1px solid black;
+    }
+</style>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + width/2 + ', ' + height/2 + ')');
+
+    let data = [{name: 'sun', orbitR:0, x: 0, y:0, r:50, period: 1, color: 'orange'},
+        {name: 'earth', orbitR: 1, x: 1, y:0, r:10, period: 1, color: 'blue'},
+        {name: 'mars', orbitR: 1.6, x: 1.6, y:0, r:8, period: 3, color: 'red'},
+        ];
+
+    data = d3.range(100).map( i => ({orbitR: Math.random() * 2, x:}))    
+
+    let xscale = d3.scaleLinear()
+        .domain([0, 5])
+        .range([0, width]);
+
+    let yscale = d3.scaleLinear()
+        .domain([0,5])
+        .range([0, height]);
+
+    svgg.selectAll('circle')
+        .data(data)
+      .enter()
+        .append('circle')
+        .attr('cx', d => xscale(d.x))
+        .attr('cy', d => yscale(d.y))
+        .attr('r', d => d.r)
+        .style('fill', d => d.color)
+        ;
+
+    let animate = function(elapsed) {
+
+        let sec = elapsed/3000;
+
+        svg.selectAll('circle')
+            .attr('cx', d => xscale(d.orbitR * Math.cos(2*Math.PI * sec/d.period)))
+            .attr('cy', d => yscale(-d.orbitR * Math.sin(2*Math.PI * sec/d.period)));
+    }
+
+    d3.timer(animate);
+
+</script>
+
+</html>

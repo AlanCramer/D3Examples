@@ -1,8 +1,8 @@
 <html>
 
 <head>
-	<script src="d3/d3.min.js"></script>
-	
+	<script src="../d3/d3.v4.min.js"></script>
+
 	<style>
 	.overlay {
 	  fill: none;
@@ -17,8 +17,8 @@
 var width = 960,
     height = 500;
 
-var randomX = d3.random.normal(width / 2, 80),
-    randomY = d3.random.normal(height / 2, 80);
+var randomX = d3.randomNormal(width / 2, 80),
+    randomY = d3.randomNormal(height / 2, 80);
 
 var data = d3.range(2000).map(function() {
   return [
@@ -31,7 +31,7 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
   .append("g")
-    .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
+    .call(d3.zoom().scaleExtent([.5, 18]).on("zoom", zoom))
   .append("g");
 
 svg.append("rect")
@@ -46,10 +46,11 @@ svg.selectAll("circle")
     .attr("transform", function(d) { return "translate(" + d + ")"; });
 
 function zoom() {
-  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  //svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  svg.attr("transform", d3.event.transform); // auto calls toString()
 }
-		
-		
+
+
 	</script>
 </body>
 

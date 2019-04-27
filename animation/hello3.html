@@ -1,0 +1,68 @@
+<html>
+
+<head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    #sun {
+        fill: yellow;
+    }
+
+    .line {
+        stroke-width: 2;
+        stroke: black;
+        stroke-dasharray: .5em;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+    <svg id='chart' width=800 height=400></svg>
+
+<script>
+
+    let svg = d3.select('#chart');
+    let margin = {top: 0, right: 0, bottom: 0, left: 0},
+        width = +svg.attr('width') - margin.left - margin.right,
+        height = +svg.attr('height') - margin.top - margin.bottom;
+
+    let svgg = svg.append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svgg.append('circle')
+        .attr('cx', 100)
+        .attr('cy', 200)
+        .attr('r', 50)
+        .attr('fill', 'blue')
+        .transition()
+        .delay(500)
+        .duration(2000)
+        .attrTween('cx', function(d, i) {
+            return function(t) {
+                return  t*700;
+            }
+        })
+        .attrTween('cy', function(d, i) {
+            return function(t) {
+                return -height * Math.sin(Math.PI*t) / 2 + height/2;
+            }
+        })
+        ;
+
+
+
+</script>
+
+
+</body>
+
+
+</html>

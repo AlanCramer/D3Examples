@@ -1,0 +1,65 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<svg width=800 height=400></svg>
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    path{
+        fill: none;
+        stroke: orange;
+        stroke-width: 4px;
+    }
+</style>
+
+<script>
+
+    let svg = d3.select('svg')
+        width = +svg.attr('width'),
+        height = +svg.attr('height');
+
+    let ptCt = 10;
+    let data = d3.range(ptCt).map(i => [width/ptCt*(i+.5), 100]);
+
+    let pathGen = d3.line()
+        .curve(d3.curveLinear);
+
+    let dragPt = function(d) {
+
+        d[0] = d3.event.x;
+        d[1] = d3.event.y;
+
+        d3.select(this)
+            .attr('cx', d[0])
+            .attr('cy', d[1]);
+
+        d3.select('path')
+            .attr('d', pathGen(data));
+    }
+
+    svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', d=>d[0])
+        .attr('cy', d=>d[1])
+        .attr('r', 8)
+        .attr('fill', 'red')
+        .call(d3.drag()
+            .on('drag', dragPt)
+        );
+
+
+
+    svg.append('path')
+        .attr('d', pathGen(data));
+
+
+</script>
+
+</html>

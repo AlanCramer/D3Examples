@@ -1,0 +1,77 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+
+<style>
+
+    svg {
+        border: 1px solid black;
+    }
+
+    path {
+        fill: none;
+        stroke: orange;
+        stroke-width: 3px;
+    }
+
+    circle {
+        fill: blue;
+    }
+
+</style>
+
+<svg width=600 height=600></svg>
+
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height');
+        //svgg = svg.append('g').attr('transform', 'translate (' + width/2 + ',' + height/2 + ')');
+
+    let data = [[100, 100], [200, 100], [300, 100], [400, 100]];
+
+    svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', d => d[0])
+        .attr('cy', d => d[1])
+        .attr('r', 10)
+        .call(d3.drag()
+            .on('drag', function(d) {
+
+                d3.select(this)
+                    .attr('cx', d[0] = d3.event.x)
+                    .attr('cy', d[1] = d3.event.y);
+
+                svg.select('#curvedPath')
+                    .attr('d', pathGen(data));
+
+                svg.select('#linearPath')
+                    .attr('d', linearPathGen(data));            
+            })
+        );
+
+
+    let pathGen = d3.line().curve(d3.curveCardinal);
+    let linearPathGen = d3.line();
+
+    let pathStr = pathGen(data);
+    let pathStr2 = linearPathGen(data);
+
+    svg.append('path')
+        .attr('id', 'curvedPath')
+        .attr('d', pathStr);
+
+    svg.append('path')
+        .attr('id', 'linearPath')
+        .attr('d', pathStr2);
+
+
+</script>
+
+</html>
