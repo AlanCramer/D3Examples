@@ -1,0 +1,82 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+</style>
+
+
+<svg width=800 height=400></svg>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + height/4 + ',' + height/2 + ')');
+
+    let scale = d3.scaleLinear()
+        .domain([0, 3])
+        .range([0, height/2]);
+
+    let wavePts = [
+        { freq : .2, amp : 1 }
+    ]
+
+    let drawBackground = function(g, scale) {
+        g.append('circle')
+            .attr('r', scale(1))
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('fill', 'none')
+            .attr('stroke',  'black')
+            .attr('stroke-width', 1)
+    }
+
+    drawBackground(svgg, scale);
+
+    svgg.selectAll('.wavePt')
+        .data(wavePts)
+        .enter()
+        .append('circle')
+        .attr('class', 'wavePt')
+        .attr('r', d=>6)
+        .attr('fill', 'blue')
+
+    svgg.selectAll('.waveMarker')
+        .data(wavePts)
+        .enter()
+        .append('circle')
+        .attr('class', 'waveMarker')
+        .attr('r', d=>6)
+        .attr('fill', 'red')
+
+    let animateWavePts = function (t) {
+
+        let tSec = t/1000;
+
+        d3.selectAll('.wavePt')
+            .attr('cx', d=> scale(d.amp) * Math.cos(tSec * 2* Math.PI * d.freq))
+            .attr('cy', d=> scale(-d.amp) * Math.sin(tSec * 2* Math.PI * d.freq))
+
+        d3.selectAll('.waveMarker')
+            .attr('cx', d=> scale(2))
+            .attr('cy', d=> scale(-d.amp) * Math.sin(tSec * 2* Math.PI * d.freq))
+
+        svgg.append('circle')
+            .attr('r', 3)
+            .attr('fill', 'blue')
+            .attr('cx', d=> scale(2+tSec))
+            .attr('cy', d=> scale(-1) * Math.sin(.2 * tSec * 2* Math.PI ))
+    }
+
+    d3.timer(animateWavePts);
+
+
+</script>
+</html>

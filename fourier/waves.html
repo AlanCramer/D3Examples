@@ -1,0 +1,78 @@
+<html>
+
+<!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+
+    .line {
+        fill: none;
+        stroke: red;
+        stroke-width: 2px;
+    }
+</style>
+
+
+<svg width=800 height=400></svg>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + height/2 + ',' + height/2 + ')');
+
+    let scale = d3.scaleLinear()
+        .domain([0, 3])
+        .range([0, height/2]);
+
+    let nodeCt = 10
+    let nodePts = d3.range(nodeCt).map((d,i) => ({x: (i+1)*6/nodeCt, y:0 }))
+
+    svgg.selectAll('.nodePt')
+        .data(nodePts)
+        .enter()
+        .append('circle')
+        .attr('class', 'nodePt')
+        .attr('r', d=>6)
+        .attr('cx', d=>scale(d.x))
+        .attr('ct', d=>scale(d.y))
+        .attr('fill', 'blue')
+
+    var curve = d3.line().curve(d3.curveCardinal)
+            .x(function(d){ return scale(d.x); })
+            .y(function(d){ return scale(d.y); });
+
+    svgg.append("path")
+        .data([nodePts])
+        .attr("class", "line")
+        .attr("d", curve);
+
+    let tlast = 0;
+    let animateWavePts = function (t) {
+
+        let tSec = t/10000;
+
+        nodePts.map( (d, i) => d.y = 2 * Math.sin(tSec * 2* Math.PI + i))
+
+        d3.selectAll('.nodePt')
+            .data(nodePts)
+            .join('.nodePt')
+                //.attr('cx', d=> scale(d.amp) * Math.cos(tSec * 2* Math.PI * d.freq))
+                .attr('cy', d => scale(d.y))
+
+        svgg.select('.line')
+            .attr("d", curve);
+
+    }
+
+    d3.timer(animateWavePts);
+
+
+</script>
+</html>
