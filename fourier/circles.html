@@ -8,7 +8,7 @@
     }
     .fourCir {
         fill: blue;
-        fill-opacity: .2;
+        fill-opacity: .1;
         stroke: black;
         stroke-width: 1;
     }
@@ -18,9 +18,7 @@
     }
 </style>
 
-
 <svg width=800 height=400></svg>
-
 
 <script>
 
@@ -66,33 +64,27 @@
     let fcirsG = svgg.selectAll('.fourCir')
         .data(fourierCircs)
         .enter()
-        .append('g')
-        .attr('class', 'fourCir');
+            .append('g')
+            .attr('class', 'fourCir');
 
     fcirsG.append('circle')
         .attr('class', 'fourBnd')
         .attr('r' , d => scale(d.amp) )
-        .attr('cx', d => scale(d.ctr.x) )
-        .attr('cy', d => scale(d.ctr.y) )
 
     fcirsG.append('line')
         .attr('class', 'fourLn')
-        .attr('x1', d => scale(d.ctr.x))
-        .attr('y1', d => scale(d.ctr.y))
-        .attr('x2', d => scale(d.mkr.x + d.amp))
-        .attr('y2', d => scale(d.mkr.y))
 
     fcirsG.append('circle')
         .attr('class', 'fourMkr')
         .attr('r', d => 5)
-        .attr('cx', d => scale(d.mkr.x + d.amp))
-        .attr('cy', d => scale(d.mkr.y))
+
 
 
     let animateWavePts = function (t) {
 
         let tSec = t/1000;
 
+        // update the data
         fourierCircs.forEach( (d, i) => {
 
             d.mkr.x = d.amp * Math.cos(tSec * 2* Math.PI * d.freq) + d.ctr.x
@@ -105,6 +97,7 @@
             }
         })
 
+        // render
         let jn = d3.selectAll('.fourCir')
             .data(fourierCircs)
             .join('.fourCir')
