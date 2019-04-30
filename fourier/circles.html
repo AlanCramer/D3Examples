@@ -8,7 +8,7 @@
     }
     .fourCir {
         fill: blue;
-        fill-opacity: .3;
+        fill-opacity: .2;
         stroke: black;
         stroke-width: 1;
     }
@@ -28,7 +28,7 @@
         width = +svg.attr('width'),
         height = +svg.attr('height'),
         svgg = svg.append('g')
-            .attr('transform', 'translate (' + height/4 + ',' + height/2 + ')');
+            .attr('transform', 'translate (' + width/2 + ',' + height/2 + ')');
 
     let scale = d3.scaleLinear()
         .domain([0, 3])
@@ -42,8 +42,14 @@
             mkr: { x: 1, y: 0 }
         },
         {
-            freq : .2,
-            amp : .5,
+            freq : .4,
+            amp : 1.5,
+            ctr: { x: 0,   y: 0 },
+            mkr: { x: .5, y: 0 }
+        },
+        {
+            freq : 1,
+            amp : .6,
             ctr: { x: 0,   y: 0 },
             mkr: { x: .5, y: 0 }
         },
@@ -52,8 +58,8 @@
     fourierCircs.forEach( (c,i) => {
         if (i>0) {
             pr = fourierCircs[i-1];
-            c.x = pr.x + pr.amp;
-            c.y = pr.y;
+            c.ctr.x = pr.mkr.x;
+            c.ctr.y = pr.mkr.y;
         }
     })
 
@@ -88,13 +94,14 @@
         let tSec = t/1000;
 
         fourierCircs.forEach( (d, i) => {
+
+            d.mkr.x = d.amp * Math.cos(tSec * 2* Math.PI * d.freq) + d.ctr.x
+            d.mkr.y = -d.amp * Math.sin(tSec * 2* Math.PI * d.freq) + d.ctr.y
+
             if (i > 0) {
                 d1 = fourierCircs[i-1]
                 d.ctr.x = d1.mkr.x
                 d.ctr.y = d1.mkr.y
-
-                d.mkr.x = d1.amp * Math.cos(tSec * 2* Math.PI * d1.freq)
-                d.mkr.y = -d1.amp * Math.sin(tSec * 2* Math.PI * d1.freq)
             }
         })
 
@@ -106,12 +113,12 @@
             .attr('cx', d => scale(d.ctr.x))
             .attr('cy', d => scale(d.ctr.y))
         jn.select('.fourMkr')
-            .attr('cx', d => scale(d.mkr.x + d.amp))
+            .attr('cx', d => scale(d.mkr.x))
             .attr('cy', d => scale(d.mkr.y))
         jn.select('.fourLn')
             .attr('x1', d => scale(d.ctr.x))
             .attr('y1', d => scale(d.ctr.y))
-            .attr('x2', d => scale(d.mkr.x + d.amp))
+            .attr('x2', d => scale(d.mkr.x))
             .attr('y2', d => scale(d.mkr.y))
     }
 
