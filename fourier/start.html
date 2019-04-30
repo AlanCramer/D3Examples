@@ -56,6 +56,12 @@
         .attr('r', d=>6)
         .attr('fill', 'red')
 
+    // how many points do we want for the wave?
+    let waveData = d3.range(20);
+    var smoothLine = d3.line().curve(d3.curveCardinal)
+                    .x(function(d){ return x(d.x); })
+                    .y(function(d){ return y(d.y); });
+
     let animateWavePts = function (t) {
 
         let tSec = t/1000;
@@ -68,11 +74,6 @@
             .attr('cx', d=> scale(2))
             .attr('cy', d=> scale(-d.amp) * Math.sin(tSec * 2* Math.PI * d.freq))
 
-        svgg.append('circle')
-            .attr('r', 3)
-            .attr('fill', 'blue')
-            .attr('cx', d=> scale(2+tSec))
-            .attr('cy', d=> scale(-1) * Math.sin(.2 * tSec * 2* Math.PI ))
     }
 
     d3.timer(animateWavePts);

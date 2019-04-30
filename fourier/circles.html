@@ -1,0 +1,122 @@
+<html>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+    .fourCir {
+        fill: blue;
+        fill-opacity: .3;
+        stroke: black;
+        stroke-width: 1;
+    }
+    .fourLn {
+        stroke: black;
+        stroke-width: 1;
+    }
+</style>
+
+
+<svg width=800 height=400></svg>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + height/4 + ',' + height/2 + ')');
+
+    let scale = d3.scaleLinear()
+        .domain([0, 3])
+        .range([0, height/2]);
+
+    let fourierCircs = [
+        {
+            freq : .2,
+            amp : 1, // amp is radius
+            ctr: { x: 0,   y: 0 },
+            mkr: { x: 1, y: 0 }
+        },
+        {
+            freq : .2,
+            amp : .5,
+            ctr: { x: 0,   y: 0 },
+            mkr: { x: .5, y: 0 }
+        },
+    ]
+
+    fourierCircs.forEach( (c,i) => {
+        if (i>0) {
+            pr = fourierCircs[i-1];
+            c.x = pr.x + pr.amp;
+            c.y = pr.y;
+        }
+    })
+
+    let fcirsG = svgg.selectAll('.fourCir')
+        .data(fourierCircs)
+        .enter()
+        .append('g')
+        .attr('class', 'fourCir');
+
+    fcirsG.append('circle')
+        .attr('class', 'fourBnd')
+        .attr('r' , d => scale(d.amp) )
+        .attr('cx', d => scale(d.ctr.x) )
+        .attr('cy', d => scale(d.ctr.y) )
+
+    fcirsG.append('line')
+        .attr('class', 'fourLn')
+        .attr('x1', d => scale(d.ctr.x))
+        .attr('y1', d => scale(d.ctr.y))
+        .attr('x2', d => scale(d.mkr.x + d.amp))
+        .attr('y2', d => scale(d.mkr.y))
+
+    fcirsG.append('circle')
+        .attr('class', 'fourMkr')
+        .attr('r', d => 5)
+        .attr('cx', d => scale(d.mkr.x + d.amp))
+        .attr('cy', d => scale(d.mkr.y))
+
+
+    let animateWavePts = function (t) {
+
+        let tSec = t/1000;
+
+        fourierCircs.forEach( (d, i) => {
+            if (i > 0) {
+                d1 = fourierCircs[i-1]
+                d.ctr.x = d1.mkr.x
+                d.ctr.y = d1.mkr.y
+
+                d.mkr.x = d1.amp * Math.cos(tSec * 2* Math.PI * d1.freq)
+                d.mkr.y = -d1.amp * Math.sin(tSec * 2* Math.PI * d1.freq)
+            }
+        })
+
+        let jn = d3.selectAll('.fourCir')
+            .data(fourierCircs)
+            .join('.fourCir')
+
+        jn.select('.fourBnd')
+            .attr('cx', d => scale(d.ctr.x))
+            .attr('cy', d => scale(d.ctr.y))
+        jn.select('.fourMkr')
+            .attr('cx', d => scale(d.mkr.x + d.amp))
+            .attr('cy', d => scale(d.mkr.y))
+        jn.select('.fourLn')
+            .attr('x1', d => scale(d.ctr.x))
+            .attr('y1', d => scale(d.ctr.y))
+            .attr('x2', d => scale(d.mkr.x + d.amp))
+            .attr('y2', d => scale(d.mkr.y))
+    }
+
+    d3.timer(animateWavePts);
+
+
+</script>
+</html>
