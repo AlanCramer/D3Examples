@@ -1,0 +1,158 @@
+<html>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+    .fourCir {
+        fill: blue;
+        fill-opacity: .1;
+        stroke: black;
+        stroke-width: 1;
+    }
+    .fourLn {
+        stroke: black;
+        stroke-width: 1;
+    }
+</style>
+
+<svg width=800 height=400></svg>
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            .attr('transform', 'translate (' + width/4 + ',' + height/2 + ')');
+
+    let scale = d3.scaleLinear()
+        .domain([0, 3])
+        .range([0, height/2]);
+
+    // amp is radius
+    let fourierCircs = [
+        { freq :  2,  amp : 1, },
+        { freq :  1.5,  amp : .6, },
+        { freq :  1,  amp : .8,},
+        // { freq :  2,  amp : .6,},
+    ]
+
+    fourierCircs.forEach( c => {
+        c.ctr = {};
+        c.mkr = {};
+
+        c.ctr.x = c.mkr.x = 0;
+        c.ctr.y = c.mkr.y = 0;
+    })
+
+    let ptCt = 700
+    let wfpts = d3.range(ptCt).map( (d,i) => ({ x: 5*i/ptCt + 3, y:0 }) )
+
+    let createCircleDom = function() {
+        let fcirsG = svgg.selectAll('.fourCir')
+            .data(fourierCircs)
+            .enter()
+                .append('g')
+                .attr('class', 'fourCir');
+
+        fcirsG.append('circle')
+            .attr('class', 'fourBnd')
+            .attr('r' , d => scale(d.amp) )
+
+        fcirsG.append('line')
+            .attr('class', 'fourLn')
+
+        fcirsG.append('circle')
+            .attr('class', 'fourMkr')
+            .attr('r', d => 5)
+    }
+    let updateCircleDom = function(fourierCircs) {
+        // render
+        let jn = d3.selectAll('.fourCir')
+            .data(fourierCircs)
+            .join('.fourCir')
+
+        jn.select('.fourBnd')
+            .attr('cx', d => scale(d.ctr.x))
+            .attr('cy', d => scale(d.ctr.y))
+        jn.select('.fourMkr')
+            .attr('cx', d => scale(d.mkr.x))
+            .attr('cy', d => scale(d.mkr.y))
+        jn.select('.fourLn')
+            .attr('x1', d => scale(d.ctr.x))
+            .attr('y1', d => scale(d.ctr.y))
+            .attr('x2', d => scale(d.mkr.x))
+            .attr('y2', d => scale(d.mkr.y))
+    }
+
+    let createWaveformDom = function(wfpts) {
+        svgg.selectAll('.wfpt')
+            .data(wfpts)
+            .enter()
+                .append('circle')
+                .attr('class', 'wfpt')
+                .attr('r',  d => 3)
+                .attr('cx', d => scale(d.x))
+                .attr('cy', d => scale(d.y))
+
+    }
+    let updateWaveformDom = function(wfpts) {
+        svgg.selectAll('.wfpt')
+            .data(wfpts)
+            .join('.wfpt')
+                .attr('r',  d => 3)
+                .attr('cx', d => scale(d.x))
+                .attr('cy', d => scale(d.y))
+
+    }
+
+    let updateWaveformData = function(wfpts, newPty) {
+
+        for (let ipt = wfpts.length -1; ipt > 0; ipt--) {
+
+            let curpt = wfpts[ipt];
+            let prvpt = wfpts[ipt-1];
+
+            curpt.y = prvpt.y
+        }
+
+        wfpts[0].y = newPty;
+    }
+
+    let animateWavePts = function (t) {
+
+        let tSec = t/5000;
+
+        // update the data
+        fourierCircs.forEach( (d, i) => {
+
+            d.mkr.x = d.amp * Math.cos(tSec * 2* Math.PI * d.freq) + d.ctr.x
+            d.mkr.y = -d.amp * Math.sin(tSec * 2* Math.PI * d.freq) + d.ctr.y
+
+            if (i > 0) {
+                d1 = fourierCircs[i-1]
+                d.ctr.x = d1.mkr.x
+                d.ctr.y = d1.mkr.y
+            }
+        })
+
+        let lastCir = fourierCircs[fourierCircs.length-1]
+
+        updateWaveformData(wfpts, lastCir.mkr.y)
+
+        // render
+        updateCircleDom(fourierCircs)
+        updateWaveformDom(wfpts)
+    }
+
+    createCircleDom();
+    createWaveformDom(wfpts);
+
+    d3.timer(animateWavePts);
+
+
+</script>
+</html>
