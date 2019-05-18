@@ -1,0 +1,68 @@
+<html>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+</style>
+
+
+<svg width=800 height=400></svg>
+
+
+<script>
+
+    let svg = d3.select('svg'),
+        width = +svg.attr('width'),
+        height = +svg.attr('height'),
+        svgg = svg.append('g')
+            //.attr('transform', 'translate (' + width/2 + ',' + height/2 + ')');
+
+    let pxCt = 100;
+
+    let xMin = -10;
+    let xMax = 10;
+    let xRange = xMax - xMin;
+    let yMin = -3;
+    let yMax = 3;
+    let yRange = yMax - yMin;
+
+    let fn1 = x => Math.sin(x)
+
+    let pts = d3.range(pxCt).map( i => ({ x: xMin + (i+.5)*xRange/pxCt, y: 0}) )
+    let newpts = pts.forEach( p => ({ x:p.x, y:fn1(p.x)}) )
+
+    let xscale = d3.scaleLinear()
+        .domain([xMin, xMax])
+        .range([0, width])
+
+    let yscale = d3.scaleLinear()
+        .domain([yMin, yMax])
+        .range([0, height])
+
+    let etr = svgg.selectAll('.dataPt')
+        .data(pts)
+        .enter()
+
+    etr.append('circle')
+        .classed('dataPt', true)
+        .attr('r', 3)
+        .attr('cx', d=>xscale(d.x))
+        .attr('cy', d=>yscale(d.y))
+        .style('fill', 'blue')
+
+    var t = d3.transition()
+        //.delay(750)
+        .duration(750)
+        .ease(d3.easeLinear);
+
+    svgg.selectAll('.dataPt').transition(t)
+        .attr('r', 3)
+        .style('fill', 'red')
+        .attr('cy', d=> yscale(fn1(d.x)) )
+
+
+</script>
+</html>

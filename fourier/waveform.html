@@ -28,21 +28,17 @@
         width = +svg.attr('width'),
         height = +svg.attr('height'),
         svgg = svg.append('g')
-            .attr('transform', 'translate (' + width/4 + ',' + height/4 + ') scale(.5)');
+            .attr('transform', 'translate (' + width/4 + ',' + height/2 + ') scale(1)');
 
     let scale = d3.scaleLinear()
         .domain([0, 3])
         .range([0, height/2]);
 
-    // amp is radius
-    // let fourierCircs = [
-    //     { freq :  1,  amp : 1 },
-    //     { freq :  2,  amp : 1/2 },
-    //     { freq :  3,  amp : 1/3 },
-    //     { freq :  4,  amp : 1/4 },
-    // ]
-    let circCt = 5;
-    let fourierCircs = d3.range(1, circCt+1).map( i => ({ freq: i, amp: 1/i}))
+    let sawToothFn = i => ({ freq: i, amp: 1/i})
+    let squareWvFn = i => ({ freq: 2*i-1, amp: 1/(2*i -1)})
+
+    let circCt = 10;
+    let fourierCircs = d3.range(1, circCt+1).map( squareWvFn )
 
     fourierCircs.forEach( c => {
         c.ctr = {};
@@ -68,9 +64,14 @@
         wfpts[0].y = newPty;
     }
 
+    let updateWvPtData = function(wfpts, newPtx) {
+
+        wfpts[0].y = newPty;
+    }
+
     let animateWavePts = function (t) {
 
-        let tSec = t/5000;
+        let tSec = t/10000;
 
         // update the data
         fourierCircs.forEach( (d, i) => {
@@ -91,10 +92,14 @@
 
         // render
         updateCircleDom(svgg, fourierCircs)
+        //updateCircleDom(svgg2, fourierCircs)
+
         updateWaveformDom(svgg, wfpts)
     }
 
     createCircleDom(svgg, fourierCircs);
+    //createCircleDom(svgg2, fourierCircs);
+
     createWaveformDom(svgg, wfpts);
 
     d3.timer(animateWavePts);
