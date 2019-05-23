@@ -14,9 +14,14 @@ let createCircleDom = function(svgg, fourierCircs) {
     fcirsG.append('line')
         .attr('class', 'fourLn')
 
-    fcirsG.append('circle')
+    let markers = fcirsG.append('circle')
         .attr('class', 'fourMkr')
         .attr('r', d => 5)
+
+    markers.filter( (d,i) => i === fourierCircs.length-1)
+        .classed('lastMarker', true)
+        .style('fill', 'red')
+        .style('fill-opacity', 1)
 }
 
 let updateCircleDom = function(svgg, fourierCircs) {
@@ -36,4 +41,8 @@ let updateCircleDom = function(svgg, fourierCircs) {
         .attr('y1', d => scale(d.ctr.y))
         .attr('x2', d => scale(d.mkr.x))
         .attr('y2', d => scale(d.mkr.y))
+
+    let lastMrkr = jn.selectAll('.fourMkr')
+         .filter(function (d, i) { return i === fourierCircs.length-1;})
+         .style('fill', 'red');
 }

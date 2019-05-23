@@ -1,0 +1,42 @@
+<html>
+
+<!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<body>
+
+<script>
+
+
+    function randomLetters() {
+        return d3.shuffle("abcdefghijklmnopqrstuvwxyz".split(""))
+            .slice(0, Math.floor(6 + Math.random() * 20))
+            .sort();
+    }
+
+    function update() {
+        svg.selectAll("text")
+            .data(randomLetters())
+            .join("text")
+              .attr("x", (d, i) => i * 16)
+              .text(d => d);
+
+        window.setTimeout(update, 2000)
+    }
+
+    let width = 600;
+
+    const svg = d3.create("svg")
+        .attr("width", width)
+        .attr("height", 33)
+        .attr("viewBox", `0 -20 ${width} 33`);
+
+    d3.select('body')
+        .append(() => svg.node())
+
+    update()
+
+</script>
+
+</body>
+</html>

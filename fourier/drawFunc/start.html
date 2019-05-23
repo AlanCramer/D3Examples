@@ -1,18 +1,67 @@
 <html>
-
+<head>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script> -->
 
 <style>
     svg{
         border: 1px solid black;
     }
-</style>
+    .line {
+        fill: none;
+        stroke: blue;
+        stroke-width: 2px;
+    }
 
+</style>
+</head>
+
+<body>
 
 <svg width=800 height=400></svg>
 
 
 <script>
+
+    // function wait(condition, func, counter = 0) {
+    //   if (condition || counter > 10) {
+    //     return func()
+    //   }
+    //
+    //   setTimeout(wait.bind(null, condition, func, counter + 1), 30)
+    // }
+    //
+    // let addMathJax = function() {
+    //   const continuation = () => {
+    //     MathJax.Hub.Config({
+    //       tex2jax: {
+    //         inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+    //         processEscapes: true
+    //       }
+    //     });
+    //
+    //     MathJax.Hub.Register.StartupHook("End", function() {
+    //       setTimeout(() => {
+    //         svg.selectAll('.tick').each(function(){
+    //           var self = d3.select(this),
+    //                g = self.select('text>span>svg');
+    //
+    //           if(g[0][0] && g[0][0].tagName === 'svg') {
+    //             g.remove();
+    //             self.append(function(){
+    //               return g.node();
+    //             });
+    //           }
+    //         });
+    //       }, 500);
+    //     });
+    //
+    //     MathJax.Hub.Queue(["Typeset", MathJax.Hub, svg.node()]);
+    //   };
+    //
+    //   wait((window.hasOwnProperty('MathJax')), continuation.bind(this));
+    // }
+
 
     let svg = d3.select('svg'),
         width = +svg.attr('width'),
@@ -53,6 +102,18 @@
         .attr('cy', d=>yscale(d.y))
         .style('fill', 'blue')
 
+    var curve = d3.line().curve(d3.curveLinear)
+            .x(function(d){ return xscale(d.x); })
+            .y(function(d){ return yscale(d.y); });
+
+    svgg.append("path")
+        .data([pts])
+        .attr("class", "line")
+        .attr("d", curve);
+
+    // svgg.select('.line')
+    //     .attr("d", curve);
+
     var t = d3.transition()
         //.delay(750)
         .duration(750)
@@ -63,6 +124,24 @@
         .style('fill', 'red')
         .attr('cy', d=> yscale(fn1(d.x)) )
 
+    // svgg.append('text')
+    //     .text("$\\frac" + "{\\pi}4$")
+    //     .attr('x', 100)
+    //     .attr('y', 100)
+
+    // let fo = svg.append('foreignObject')
+    //     .attr('cx', 100)
+    //     .attr('cy', 100)
+    //     .attr('width', 100)
+    //     .attr('height', 100)
+    //
+    // let fodiv = fo.append('div')
+    //     .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+    //     .attr('style', 'font-family:Times; font-size:15px')
+    //
+    // //fodiv.text('hello')
+    // fodiv.text('$\\frac{\\pi}4$')
 
 </script>
+</body>
 </html>
