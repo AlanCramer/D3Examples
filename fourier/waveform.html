@@ -5,9 +5,7 @@
 <script src="./drawWaveform.js"></script>
 
 <style>
-    svg{
-        border: 1px solid black;
-    }
+
     .fourCir {
         fill: blue;
         fill-opacity: .1;
@@ -20,15 +18,34 @@
     }
 </style>
 
-<svg width=800 height=400></svg>
-
+<body>
+</body>
 <script>
 
-    let svg = d3.select('svg'),
-        width = +svg.attr('width'),
-        height = +svg.attr('height'),
+    let spinnerLabel = d3.select('body')
+        .append('text')
+        .text('Number of Circles ')
+
+    let spinner = d3.select('body')
+        .append('input')
+        .attr('id', 'circleCount')
+        .attr('type', 'number')
+        .attr('min', '0')
+        .attr('value', '0')
+        .on('input', () => resetAll(+ d3.select('#circleCount').node().value))
+
+    let svgdiv = d3.select('body')
+        .append('div')
+
+    svgdiv.append('svg')
+        .attr('width', 800)
+        .attr('height', 400)
+
+    let svg = d3.select('svg')
+        width = +svg.attr('width')
+        height = +svg.attr('height')
         svgg = svg.append('g')
-            .attr('transform', 'translate (' + width/4 + ',' + height/2 + ') scale(1)');
+            .attr('transform', 'translate (' + width/4 + ',' + height/2 + ') scale(1)')
 
     let scale = d3.scaleLinear()
         .domain([0, 3])
@@ -37,71 +54,83 @@
     let sawToothFn = i => ({ freq: i, amp: 1/i})
     let squareWvFn = i => ({ freq: 2*i-1, amp: 1/(2*i -1)})
 
-    let circCt = 10;
-    let fourierCircs = d3.range(1, circCt+1).map( sawToothFn )
+    let animateTimer = null;
 
-    fourierCircs.forEach( c => {
-        c.ctr = {};
-        c.mkr = {};
+    function resetAll(circCt) {
 
-        c.ctr.x = c.mkr.x = 0;
-        c.ctr.y = c.mkr.y = 0;
-    })
+        svgg.selectAll("*").remove();
 
-    let ptCt = 1000
-    let wfpts = d3.range(ptCt).map( (d,i) => ({ x: 5*i/ptCt + 3, y:0 }) )
+        let fourierCircs = d3.range(1, circCt+1).map( squareWvFn )
 
-    let updateWaveformData = function(wfpts, newPty) {
+        fourierCircs.forEach( c => {
+            c.ctr = {};
+            c.mkr = {};
 
-        for (let ipt = wfpts.length -1; ipt > 0; ipt--) {
-
-            let curpt = wfpts[ipt];
-            let prvpt = wfpts[ipt-1];
-
-            curpt.y = prvpt.y
-        }
-
-        wfpts[0].y = newPty;
-    }
-
-    let updateWvPtData = function(wfpts, newPtx) {
-
-        wfpts[0].y = newPty;
-    }
-
-    let animateWavePts = function (t) {
-
-        let tSec = t/10000;
-
-        // update the data
-        fourierCircs.forEach( (d, i) => {
-
-            if (i > 0) {
-                d1 = fourierCircs[i-1]
-                d.ctr.x = d1.mkr.x
-                d.ctr.y = d1.mkr.y
-            }
-
-            d.mkr.x = d.amp * Math.cos(tSec * 2* Math.PI * d.freq) + d.ctr.x
-            d.mkr.y = -d.amp * Math.sin(tSec * 2* Math.PI * d.freq) + d.ctr.y
+            c.ctr.x = c.mkr.x = 0;
+            c.ctr.y = c.mkr.y = 0;
         })
 
-        let lastCir = fourierCircs[fourierCircs.length-1]
+        let ptCt = 1000
+        let wfpts = d3.range(ptCt).map( (d,i) => ({ x: 5*i/ptCt + 3, y:0 }) )
 
-        updateWaveformData(wfpts, lastCir.mkr.y)
+        let updateWaveformData = function(wfpts, newPty) {
 
-        // render
-        updateCircleDom(svgg, fourierCircs)
-        //updateCircleDom(svgg2, fourierCircs)
+            for (let ipt = wfpts.length -1; ipt > 0; ipt--) {
 
-        updateWaveformDom(svgg, wfpts)
+                let curpt = wfpts[ipt];
+                let prvpt = wfpts[ipt-1];
+
+                curpt.y = prvpt.y
+            }
+
+            wfpts[0].y = newPty;
+        }
+
+        let updateWvPtData = function(wfpts, newPtx) {
+
+            wfpts[0].y = newPty;
+        }
+
+        let animateWavePts = function (t) {
+
+            let tSec = t/10000;
+
+            // update the data
+            fourierCircs.forEach( (d, i) => {
+
+                if (i > 0) {
+                    d1 = fourierCircs[i-1]
+                    d.ctr.x = d1.mkr.x
+                    d.ctr.y = d1.mkr.y
+                }
+
+                d.mkr.x = d.amp * Math.cos(tSec * 2* Math.PI * d.freq) + d.ctr.x
+                d.mkr.y = -d.amp * Math.sin(tSec * 2* Math.PI * d.freq) + d.ctr.y
+            })
+
+            let lastCir = fourierCircs[fourierCircs.length-1]
+
+            updateWaveformData(wfpts, lastCir.mkr.y)
+
+            // render
+            updateCircleDom(svgg, fourierCircs)
+            //updateCircleDom(svgg2, fourierCircs)
+
+            updateWaveformDom(svgg, wfpts)
+        }
+
+        createCircleDom(svgg, fourierCircs)
+        //createCircleDom(svgg2, fourierCircs);
+
+        createWaveformDom(svgg, wfpts)
+
+        if (animateTimer) {
+            animateTimer.stop()
+        }
+
+        animateTimer = d3.timer(animateWavePts)
     }
 
-    createCircleDom(svgg, fourierCircs);
-    //createCircleDom(svgg2, fourierCircs);
-
-    createWaveformDom(svgg, wfpts);
-    d3.timer(animateWavePts)
 
 
 </script>

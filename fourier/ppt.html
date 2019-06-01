@@ -1,0 +1,29 @@
+<html>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<style>
+</style>
+
+<h2>current page: <label id='pageId'></label> </h2>
+
+<script>
+
+d3.select('body')
+    .on( 'click', () => { incrementPage() } )
+    .on( 'keydown', () => { console.log(d3.event) })
+
+let curPage = 0;
+let incrementPage = function() {
+    curPage++
+    drawPage(curPage)
+}
+
+let drawPage = function(pageId) {
+    d3.select('#pageId')
+        .text(pageId)
+}
+
+</script>
+
+</html>
