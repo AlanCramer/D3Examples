@@ -1,4 +1,4 @@
-let createWaveformDom = function(svgg, wfpts) {
+let createWaveformDom = function(svgg, scale, wfpts) {
     svgg.selectAll('.wfpt')
         .data(wfpts)
         .enter()
@@ -9,7 +9,7 @@ let createWaveformDom = function(svgg, wfpts) {
             .attr('cy', d => scale(d.y))
 }
 
-let updateWaveformDom = function(svgg, wfpts) {
+let updateWaveformDom = function(svgg, scale, wfpts) {
     svgg.selectAll('.wfpt')
         .data(wfpts)
         .join('.wfpt')

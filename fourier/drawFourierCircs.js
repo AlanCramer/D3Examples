@@ -1,6 +1,6 @@
 
 
-let createCircleDom = function(svgg, fourierCircs) {
+let createCircleDom = function(svgg, scale, fourierCircs) {
     let fcirsG = svgg.selectAll('.fourCir')
         .data(fourierCircs)
         .enter()
@@ -24,7 +24,7 @@ let createCircleDom = function(svgg, fourierCircs) {
         .style('fill-opacity', 1)
 }
 
-let updateCircleDom = function(svgg, fourierCircs) {
+let updateCircleDom = function(svgg, scale, fourierCircs) {
     // render
     let jn = svgg.selectAll('.fourCir')
         .data(fourierCircs)
