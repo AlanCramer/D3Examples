@@ -16,7 +16,7 @@ circle {
 }
 
 </style>
-<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
 
 var points = [
@@ -55,9 +55,10 @@ transition();
 
 function transition() {
   circle.transition()
-      .duration(50000)
+      .duration(5000)
+      .ease(d3.easeLinear)
       .attrTween("transform", translateAlong(path.node()))
-      .each("end", transition);
+      .on("end", transition);
 }
 
 // Returns an attrTween for translating along the specified path element.
