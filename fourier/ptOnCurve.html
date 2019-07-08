@@ -15,6 +15,11 @@ circle {
   stroke-width: 3px;
 }
 
+.pinkPt {
+  fill: pink;
+  r: 300;
+}
+
 </style>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
@@ -53,13 +58,35 @@ var circle = svgg.append("circle")
 
 transition();
 
+let MA_pts = [];
+function printPts(){
+  console.log(MA_pts.length);
+
+  svgg.selectAll('.pinkPt')
+    .data(MA_pts)
+    .enter()
+      .append('circle')
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y)
+      .classed('pinkPt', true)
+
+  let label = d3.select('body')
+    .append('div')
+    .append('label')
+
+  let str = MA_pts.map(p => [p.x, p.y]).join('==');
+  label.text(str);
+}
+
 function transition() {
   circle.transition()
       .duration(5000)
       .ease(d3.easeLinear)
       .attrTween("transform", translateAlong(path.node()))
-      .on("end", transition);
+      .on("end", printPts)
+      ;
 }
+
 
 // Returns an attrTween for translating along the specified path element.
 function translateAlong(path) {
@@ -67,6 +94,7 @@ function translateAlong(path) {
   return function(d, i, a) {
     return function(t) {
       var p = path.getPointAtLength(t * l);
+      MA_pts.push(p);
       return "translate(" + p.x + "," + p.y + ")";
     };
   };
