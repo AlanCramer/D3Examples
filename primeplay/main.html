@@ -1,0 +1,58 @@
+<html>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="./primeUtil.js"></script>
+
+<style>
+    svg{
+        border: 1px solid black;
+    }
+</style>
+
+<svg width=800 height=400></svg>
+
+<script>
+
+const dotCt = 150;
+const dotSize = 2;
+const primes = getPrimes(dotCt*dotCt);
+console.log(primes)
+
+const svg = d3.select('svg');
+const svgWidth = svg.attr('width');
+const svgHeight = svg.attr('height');
+const svgg = svg.append('g')
+  .attr('transform', 'translate (' + svgWidth/2 + ', ' + svgHeight/2 + ')')
+  ;
+
+let directions = [[1,0], [0,1], [-1, 0], [0, -1]];
+// 1, 1, 2, 2, 3, 3, 4, 4 ...
+let cts = d3.range(1, dotCt).map(d => Math.floor((d+1)/2) );
+console.log('cts', cts);
+let positions = [];
+
+let cur = [0, 0];
+let dirIdx = 0;
+for (let id = 0; id < dotCt; ++id) {
+  dir = directions[dirIdx]
+
+  for (let j = 0; j < cts[id]; ++j) {
+    cur = [cur[0] + dir[0], cur[1] + dir[1]];
+    positions.push(cur);
+  }
+
+  dirIdx = (dirIdx + 1) % directions.length;
+}
+console.log(positions)
+
+svgg.selectAll('.dot')
+  .data(positions)
+  .enter()
+    .append('circle')
+    .attr('r', dotSize)
+    .attr('cx', d => d[0] * 2 * dotSize)
+    .attr('cy', d => d[1] * 2 * dotSize)
+    .attr('fill', (d, i) => primes.indexOf(i) === -1 ? 'white' : 'blue')
+
+</script>
+</html>

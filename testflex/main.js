@@ -1,7 +1,7 @@
 
 var margin = {top: 0, left: 0, right:0, bottom:0},
-    width = 100 - margin.left - margin.right,
-    height = 100 - margin.top - margin.bottom;
+    width = 900 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
 var topDiv = d3.select('body')
     .append('div')
@@ -26,7 +26,7 @@ var board = topDiv
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 var boardBk = board.append('rect')
-    .style('fill', 'bbeeee')
+    .style('fill', '#bbeeee')
     .attr('width', width)
     .attr('height', height);
 
